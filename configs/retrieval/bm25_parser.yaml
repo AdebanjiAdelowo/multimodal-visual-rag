@@ -1,0 +1,4 @@
+# Reference: BM25 over the page text shipped with the dataset (a strong document parser),
+# to separate the effect of OCR quality from the effect of the retriever.
+name: bm25_parser
+retriever: {type: bm25, text_source: parser_markdown}

@@ -1,0 +1,8 @@
+# Hybrid lexical/visual: BM25 over OCR + SigLIP2 page embeddings.
+name: hybrid_bm25_siglip
+retriever:
+  type: hybrid
+  fusion: rrf
+  components:
+    - {type: bm25, text_source: ocr_tesseract}
+    - {type: visual, model: google/siglip2-base-patch16-224}

@@ -1,0 +1,9 @@
+# Three-way hybrid: BM25 + dense OCR + SigLIP2.
+name: hybrid_text_siglip
+retriever:
+  type: hybrid
+  fusion: rrf
+  components:
+    - {type: bm25, text_source: ocr_tesseract}
+    - {type: dense_text, text_source: ocr_tesseract}
+    - {type: visual, model: google/siglip2-base-patch16-224}

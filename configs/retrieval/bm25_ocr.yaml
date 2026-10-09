@@ -1,0 +1,3 @@
+# OCR + BM25: the lexical baseline.
+name: bm25_ocr
+retriever: {type: bm25, text_source: ocr_tesseract}

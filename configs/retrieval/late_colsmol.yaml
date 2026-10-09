@@ -1,0 +1,3 @@
+# Multi-vector visual document retriever with late interaction (needs the `late` extra).
+name: late_colsmol
+retriever: {type: late_interaction, model: vidore/colSmol-256M}

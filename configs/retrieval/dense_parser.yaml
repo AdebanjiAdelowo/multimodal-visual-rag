@@ -1,0 +1,2 @@
+name: dense_parser
+retriever: {type: dense_text, text_source: parser_markdown, model: BAAI/bge-small-en-v1.5}

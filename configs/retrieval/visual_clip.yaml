@@ -1,0 +1,3 @@
+# Native visual embeddings: CLIP ViT-B/32.
+name: visual_clip
+retriever: {type: visual, model: openai/clip-vit-base-patch32}

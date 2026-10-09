@@ -1,0 +1,8 @@
+# Text-only hybrid: BM25 + dense over OCR, reciprocal rank fusion.
+name: hybrid_text
+retriever:
+  type: hybrid
+  fusion: rrf
+  components:
+    - {type: bm25, text_source: ocr_tesseract}
+    - {type: dense_text, text_source: ocr_tesseract}

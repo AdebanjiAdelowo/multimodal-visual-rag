@@ -1,0 +1,10 @@
+# Three-way hybrid + cross-encoder reranking of the top 20.
+name: hybrid_text_siglip_rerank
+retriever:
+  type: hybrid
+  fusion: rrf
+  components:
+    - {type: bm25, text_source: ocr_tesseract}
+    - {type: dense_text, text_source: ocr_tesseract}
+    - {type: visual, model: google/siglip2-base-patch16-224}
+rerank: {type: cross_encoder, model: cross-encoder/ms-marco-MiniLM-L6-v2, text_source: ocr_tesseract, top_n: 20}

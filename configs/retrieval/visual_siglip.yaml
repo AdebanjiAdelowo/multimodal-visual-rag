@@ -1,0 +1,3 @@
+# Native visual embeddings: SigLIP2 text tower against page-image embeddings.
+name: visual_siglip
+retriever: {type: visual, model: google/siglip2-base-patch16-224}

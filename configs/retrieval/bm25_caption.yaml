@@ -1,0 +1,3 @@
+# Caption-based retrieval, lexical. Captions are generated from pixels only.
+name: bm25_caption
+retriever: {type: bm25, text_source: caption_smolvlm_500m}
