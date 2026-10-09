@@ -1,7 +1,7 @@
 # Benchmark assets and derived artefacts are never committed (see docs/datasets.md).
-data/
-artifacts/
-uploads/
+/data/
+/artifacts/
+/uploads/
 *.parquet
 *.npy
 *.npz
