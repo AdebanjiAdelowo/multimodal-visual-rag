@@ -1,0 +1,26 @@
+# Benchmark assets and derived artefacts are never committed (see docs/datasets.md).
+data/
+artifacts/
+uploads/
+*.parquet
+*.npy
+*.npz
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Secrets
+.env
+kaggle.json
