@@ -1,0 +1,4 @@
+# Text-only RAG: OCR text of the retrieved pages, no pixels.
+name: smolvlm_500m_text_rag
+vlm: {model: HuggingFaceTB/SmolVLM-500M-Instruct}
+evidence: {mode: text, max_pages: 3, text_source: ocr_tesseract, max_chars_per_page: 2500}

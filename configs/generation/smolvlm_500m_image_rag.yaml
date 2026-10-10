@@ -1,0 +1,4 @@
+# Retrieved visual evidence + VLM: page images only.
+name: smolvlm_500m_image_rag
+vlm: {model: HuggingFaceTB/SmolVLM-500M-Instruct}
+evidence: {mode: image, max_pages: 3, image_max_side: 1024}

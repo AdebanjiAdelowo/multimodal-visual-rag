@@ -1,0 +1,4 @@
+# Retrieved visual evidence + VLM: page images only.
+name: qwen3vl_2b_image_rag
+vlm: {model: Qwen/Qwen3-VL-2B-Instruct}
+evidence: {mode: image, max_pages: 3, image_max_side: 1024}

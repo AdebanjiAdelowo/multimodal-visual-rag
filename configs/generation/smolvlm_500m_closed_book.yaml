@@ -1,0 +1,4 @@
+# Direct VLM without retrieval: the model answers from parametric knowledge only.
+name: smolvlm_500m_closed_book
+vlm: {model: HuggingFaceTB/SmolVLM-500M-Instruct}
+evidence: {mode: closed_book}

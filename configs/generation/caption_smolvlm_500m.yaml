@@ -1,0 +1,4 @@
+# Page captioning for caption-based retrieval. `name` is the text source it writes.
+name: caption_smolvlm_500m
+vlm: {model: HuggingFaceTB/SmolVLM-500M-Instruct, max_new_tokens: 110}
+evidence: {mode: image, image_max_side: 1024}

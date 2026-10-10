@@ -1,0 +1,4 @@
+# Text-only RAG: OCR text of the retrieved pages, no pixels.
+name: qwen3vl_2b_text_rag
+vlm: {model: Qwen/Qwen3-VL-2B-Instruct}
+evidence: {mode: text, max_pages: 3, text_source: ocr_tesseract, max_chars_per_page: 2500}

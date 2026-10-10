@@ -1,0 +1,4 @@
+# Image-aware RAG: page images together with their OCR text.
+name: smolvlm_500m_image_text_rag
+vlm: {model: HuggingFaceTB/SmolVLM-500M-Instruct}
+evidence: {mode: image_text, max_pages: 3, image_max_side: 1024, text_source: ocr_tesseract, max_chars_per_page: 2500}

@@ -1,0 +1,4 @@
+# Deterministic stand-in generator for tests and UI smoke runs. Loads no model.
+name: mock
+vlm: {backend: mock, model: mock}
+evidence: {mode: text, max_pages: 3}

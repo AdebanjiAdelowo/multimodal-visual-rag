@@ -1,0 +1,4 @@
+# Direct VLM without retrieval: the model answers from parametric knowledge only.
+name: qwen3vl_2b_closed_book
+vlm: {model: Qwen/Qwen3-VL-2B-Instruct}
+evidence: {mode: closed_book}
