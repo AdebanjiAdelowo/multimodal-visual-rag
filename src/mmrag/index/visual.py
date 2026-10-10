@@ -65,6 +65,9 @@ class VisualIndex:
 
     def embed_text(self, texts: list[str]) -> np.ndarray:
         torch = self._torch
+        if self._is_siglip:
+            # SigLIP text towers were trained on lowercased captions.
+            texts = [t.lower() for t in texts]
         kwargs = (
             {"padding": "max_length", "max_length": 64, "truncation": True}
             if self._is_siglip

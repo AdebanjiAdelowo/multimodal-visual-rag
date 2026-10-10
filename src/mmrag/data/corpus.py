@@ -101,7 +101,9 @@ class Corpus:
         texts = {r["page_id"]: r["text"] for r in read_jsonl(path)}
         missing = [pid for pid in self.page_ids if pid not in texts]
         if missing:
-            raise ValueError(f"Text source '{source}' lacks {len(missing)} pages, e.g. {missing[:3]}")
+            raise ValueError(
+                f"Text source '{source}' lacks {len(missing)} pages, e.g. {missing[:3]}"
+            )
         return texts
 
     def save_text(self, source: str, texts: dict[str, str], meta: dict | None = None) -> None:

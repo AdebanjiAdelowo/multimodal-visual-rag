@@ -1,0 +1,9 @@
+# Multimodal hybrid: BM25 + dense OCR + late-interaction visual retriever.
+name: hybrid_text_colsmol
+retriever:
+  type: hybrid
+  fusion: rrf
+  components:
+    - {type: bm25, text_source: ocr_tesseract}
+    - {type: dense_text, text_source: ocr_tesseract}
+    - {type: late_interaction, model: vidore/colSmol-256M}
