@@ -53,7 +53,7 @@ def page_image(url: str) -> bytes:
 def page_card(hit: dict, label: str | None = None, cited: bool = False) -> None:
     title = f"{label + ' · ' if label else ''}{hit['doc_id']} · page {hit['page_number'] + 1}"
     st.markdown(f"**{title}**" + (" · cited" if cited else ""))
-    st.image(page_image(hit["image_url"]), use_container_width=True)
+    st.image(page_image(hit["image_url"]), width="stretch")
     st.caption(f"rank {hit['rank']} · score {hit['score']:.4f}")
     if hit.get("components"):
         with st.expander("Score components"):
@@ -203,7 +203,7 @@ with tab_recognise:
     img = st.file_uploader("Image", type=["png", "jpg", "jpeg", "webp"], key="rimg")
     if img:
         left, right = st.columns(2)
-        left.image(img.getvalue(), use_container_width=True)
+        left.image(img.getvalue(), width="stretch")
         if right.button("Recognise"):
             with st.spinner("Running the vision-language model"):
                 res = api("POST", "/recognize", files={"file": (img.name, img.getvalue())})
