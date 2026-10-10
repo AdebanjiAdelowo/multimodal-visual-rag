@@ -52,9 +52,7 @@ def download(domain: str, raw_dir: Path, configs: tuple[str, ...] = CONFIGS) -> 
     repo = DOMAINS[domain]
     patterns = [f"{c}/*" for c in configs]
     local = raw_dir / f"vidore_v3_{domain}"
-    path = snapshot_download(
-        repo, repo_type="dataset", local_dir=local, allow_patterns=patterns
-    )
+    path = snapshot_download(repo, repo_type="dataset", local_dir=local, allow_patterns=patterns)
     from huggingface_hub import HfApi
 
     sha = HfApi().dataset_info(repo).sha or "unknown"

@@ -1,0 +1,4 @@
+# GPU tier (4-bit NF4, about 6 GB on a T4).
+name: qwen3vl_8b_4bit_closed_book
+vlm: {model: Qwen/Qwen3-VL-8B-Instruct, load_in_4bit: true}
+evidence: {mode: closed_book}

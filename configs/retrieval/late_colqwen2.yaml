@@ -1,0 +1,3 @@
+# GPU tier: ColQwen2 late-interaction retriever (about 9 GB of weights; run on the T4).
+name: late_colqwen2
+retriever: {type: late_interaction, model: vidore/colqwen2-v1.0}

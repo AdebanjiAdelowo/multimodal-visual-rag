@@ -1,0 +1,4 @@
+# GPU tier (fp16, about 9 GB on a T4).
+name: qwen3vl_4b_text_rag
+vlm: {model: Qwen/Qwen3-VL-4B-Instruct}
+evidence: {mode: text, max_pages: 3, text_source: ocr_tesseract, max_chars_per_page: 2500}

@@ -1,0 +1,4 @@
+# GPU tier (fp16, about 9 GB on a T4).
+name: qwen3vl_4b_closed_book
+vlm: {model: Qwen/Qwen3-VL-4B-Instruct}
+evidence: {mode: closed_book}
