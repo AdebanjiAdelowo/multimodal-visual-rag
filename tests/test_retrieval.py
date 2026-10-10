@@ -4,7 +4,7 @@ import pytest
 from mmrag.config import BM25Cfg, RetrievalCfg, load_retrieval
 from mmrag.eval.retrieval_eval import evaluate_retrieval
 from mmrag.index.dense import max_pool_by_page
-from mmrag.index.late import maxsim
+from mmrag.index.late import embed_resumable, maxsim
 from mmrag.retrieve.fusion import ranks_from_scores, rrf, zscore_fusion
 from mmrag.retrieve.pipeline import IndexRegistry, RetrievalPipeline
 from mmrag.text import chunk_words, tokenize
@@ -44,6 +44,29 @@ def test_max_pool_and_maxsim():
     pages[1, 0] = [1, 0]
     mask = np.array([[True, True], [True, False]])
     assert maxsim(q, pages, mask).tolist() == pytest.approx([2.0, 1.0])
+
+
+def test_late_index_build_resumes_from_finished_shards(tmp_path):
+    ids = [f"p{i}" for i in range(10)]
+    calls: list[str] = []
+
+    def embed(batch, fail_on=None):
+        if fail_on in batch:
+            raise RuntimeError("interrupted")
+        calls.extend(batch)
+        return [np.full((2, 3), int(pid[1:]), dtype=np.float16) for pid in batch]
+
+    with pytest.raises(RuntimeError):
+        embed_resumable(ids, lambda b: embed(b, "p6"), tmp_path, batch_size=2, shard_size=4)
+    assert calls == ids[:6]  # second shard was started but never written
+    calls.clear()
+    mats = embed_resumable(ids, embed, tmp_path, batch_size=2, shard_size=4)
+    assert calls == ids[4:]  # only the first shard is reused
+    assert [int(m[0, 0]) for m in mats] == list(range(10))
+    # A changed page order invalidates the stored shards.
+    calls.clear()
+    embed_resumable(ids[::-1], embed, tmp_path, batch_size=2, shard_size=4)
+    assert calls == ids[::-1]
 
 
 def test_bm25_search_and_exclusion(corpus):

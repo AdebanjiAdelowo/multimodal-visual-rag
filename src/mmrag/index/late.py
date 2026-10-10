@@ -7,6 +7,8 @@ the maximum similarity to any page patch.
 
 from __future__ import annotations
 
+import shutil
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -25,6 +27,41 @@ def maxsim(query: np.ndarray, pages: np.ndarray, mask: np.ndarray) -> np.ndarray
     sim = np.einsum("qd,npd->nqp", query, pages)
     sim = np.where(mask[:, None, :], sim, -np.inf)
     return sim.max(axis=2).sum(axis=1).astype(np.float32)
+
+
+def embed_resumable(
+    ids: list[str],
+    embed: Callable[[list[str]], list[np.ndarray]],
+    partial_dir: Path,
+    batch_size: int = 4,
+    shard_size: int = 64,
+) -> list[np.ndarray]:
+    """Embed pages shard by shard, keeping finished shards on disk.
+
+    A full build takes tens of minutes on a laptop; an interrupted build resumes
+    from the last complete shard. Shard files are named by position and checked
+    against the page ids they hold, so a shard from a different page order is
+    recomputed rather than reused.
+    """
+    partial_dir.mkdir(parents=True, exist_ok=True)
+    mats: list[np.ndarray] = []
+    for start in range(0, len(ids), shard_size):
+        shard_ids = ids[start : start + shard_size]
+        path = partial_dir / f"shard_{start:06d}.npz"
+        if path.exists():
+            z = np.load(path)
+            if z["ids"].tolist() == shard_ids:
+                mats.extend(z[f"m{i}"] for i in range(len(shard_ids)))
+                continue
+        shard: list[np.ndarray] = []
+        for b in range(0, len(shard_ids), batch_size):
+            shard.extend(embed(shard_ids[b : b + batch_size]))
+        tmp = partial_dir / f"shard_{start:06d}.tmp.npz"
+        np.savez(tmp, ids=np.array(shard_ids), **{f"m{i}": m for i, m in enumerate(shard)})
+        tmp.replace(path)  # atomic: a shard file is always complete
+        mats.extend(shard)
+        print(f"  late embed {min(start + shard_size, len(ids))}/{len(ids)}", flush=True)
+    return mats
 
 
 def _load_model(model_id: str, device: str):
@@ -72,17 +109,17 @@ class LateInteractionIndex:
             z = np.load(self.dir / "embeddings.npz")
             self.pages, self.mask = z["pages"], z["mask"]
         else:
-            mats: list[np.ndarray] = []
             ids = corpus.page_ids
-            for start in range(0, len(ids), batch_size):
-                images = [corpus.image(pid) for pid in ids[start : start + batch_size]]
+
+            def embed(page_ids: list[str]) -> list[np.ndarray]:
+                images = [corpus.image(pid) for pid in page_ids]
                 batch = self.processor.process_images(images).to(self.device)
                 with torch.inference_mode():
                     out = self.model(**batch).float().cpu().numpy()
                 attn = batch["attention_mask"].cpu().numpy().astype(bool)
-                mats.extend(o[m] for o, m in zip(out, attn, strict=True))
-                if (start // batch_size) % 25 == 0:
-                    print(f"  late embed {start}/{len(ids)}", flush=True)
+                return [o[m].astype(np.float16) for o, m in zip(out, attn, strict=True)]
+
+            mats = embed_resumable(ids, embed, self.dir / "partial", batch_size)
             tmax = max(m.shape[0] for m in mats)
             dim = mats[0].shape[1]
             self.pages = np.zeros((len(mats), tmax, dim), dtype=np.float16)
@@ -95,6 +132,7 @@ class LateInteractionIndex:
             store.write_meta(
                 self.dir, params, {"n_pages": len(ids), "max_patches": tmax, "dim": dim}
             )
+            shutil.rmtree(self.dir / "partial", ignore_errors=True)
         self._pages_t = torch.from_numpy(self.pages).to(self.device)
         self._mask_t = torch.from_numpy(self.mask).to(self.device)
 
