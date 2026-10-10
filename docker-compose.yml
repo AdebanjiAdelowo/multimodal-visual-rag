@@ -1,0 +1,27 @@
+# docker compose up --build
+# API on http://localhost:8000 (docs at /docs), UI on http://localhost:8501.
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      MMRAG_STRATEGY: bm25_ocr
+      MMRAG_GENERATION: mock
+    volumes:
+      # Corpora are mounted, never baked into the image.
+      - ./data/processed:/app/data/processed:ro
+      - uploads:/app/uploads
+      - artifacts:/app/artifacts
+      - hf-cache:/cache
+  ui:
+    build: .
+    command: ["streamlit", "run", "app/streamlit_app.py", "--server.address", "0.0.0.0", "--server.port", "8501"]
+    ports: ["8501:8501"]
+    environment:
+      MMRAG_API_URL: http://api:8000
+    depends_on: [api]
+
+volumes:
+  uploads:
+  artifacts:
+  hf-cache:

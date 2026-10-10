@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      # The test suite needs no neural models, network access or GPU.
+      - name: Install
+        run: uv pip install --system -e ".[app,dev]"
+      - name: Lint
+        run: |
+          ruff check src tests app kaggle
+          ruff format --check src tests app kaggle
+      - name: Test
+        env:
+          HF_HUB_OFFLINE: "1"
+        run: pytest
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t mmrag:ci .
+      - name: Smoke test API
+        run: |
+          docker run -d --name mmrag -p 8000:8000 mmrag:ci
+          for i in $(seq 1 30); do curl -sf localhost:8000/health && exit 0; sleep 1; done
+          docker logs mmrag; exit 1

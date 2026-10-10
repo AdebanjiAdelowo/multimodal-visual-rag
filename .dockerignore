@@ -1,0 +1,12 @@
+.git
+.venv
+data
+artifacts
+uploads
+results
+tests
+docs
+kaggle
+**/__pycache__
+.ruff_cache
+.pytest_cache
