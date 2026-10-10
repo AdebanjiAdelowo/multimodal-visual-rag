@@ -24,6 +24,8 @@ COMPARISONS = [
     ("visual_siglip", "late_colsmol", "single-vector vs late-interaction visual"),
     ("dense_ocr", "hybrid_text", "dense vs text hybrid"),
     ("hybrid_text", "hybrid_text_siglip", "adding SigLIP to the text hybrid"),
+    ("hybrid_text", "hybrid_text_siglip_w025", "adding SigLIP at fusion weight 0.25"),
+    ("hybrid_text_siglip", "hybrid_text_siglip_rerank", "reranking on/off (SigLIP hybrid)"),
     ("hybrid_text", "hybrid_text_colsmol", "adding ColSmol to the text hybrid"),
     ("hybrid_text", "hybrid_text_rerank", "reranking on/off (text hybrid)"),
     ("hybrid_text_colsmol", "hybrid_text_colsmol_rerank", "reranking on/off (multimodal hybrid)"),
