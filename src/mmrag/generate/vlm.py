@@ -160,7 +160,14 @@ class TransformersVLM:
             finite = trans[torch.isfinite(trans)]
             if finite.numel():
                 mean_lp = float(finite.mean().cpu())
-        return GenOutput(text, n_in, int(new_tokens.shape[0]), dt, mean_lp)
+        n_out = int(new_tokens.shape[0])
+        if self.device == "mps":
+            # The MPS allocator keeps a cached buffer for every tensor shape it has
+            # seen. Prompts differ in length, so without this the cache grows with
+            # each call (15 GB after 170 prompts with a 0.5 B parameter model).
+            del inputs, out, new_tokens
+            torch.mps.empty_cache()
+        return GenOutput(text, n_in, n_out, dt, mean_lp)
 
 
 class MockVLM:
