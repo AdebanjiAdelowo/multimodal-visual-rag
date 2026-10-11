@@ -44,12 +44,15 @@ Suggested split into sessions, each well inside the 12-hour limit:
 
 ```python
 import os
+
 # Session A: retrieval and captions
 os.environ["MMRAG_STAGES"] = "data,retrieval,captions"
 # Session B: small generators
-os.environ["MMRAG_STAGES"] = "data,generation"; os.environ["MMRAG_GENERATORS"] = "smolvlm_500m,qwen3vl_2b"
+os.environ["MMRAG_STAGES"] = "data,generation"
+os.environ["MMRAG_GENERATORS"] = "smolvlm_500m,qwen3vl_2b"
 # Session C: large generators
-os.environ["MMRAG_STAGES"] = "data,generation"; os.environ["MMRAG_GENERATORS"] = "qwen3vl_4b,qwen3vl_8b_4bit"
+os.environ["MMRAG_STAGES"] = "data,generation"
+os.environ["MMRAG_GENERATORS"] = "qwen3vl_4b,qwen3vl_8b_4bit"
 # Session D: ablations
 os.environ["MMRAG_STAGES"] = "data,ablations"
 ```

@@ -1,0 +1,14 @@
+{
+  "id": "adebanjiadelowo/multimodal-visual-rag-gpu",
+  "title": "multimodal-visual-rag-gpu",
+  "code_file": "run_gpu.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": ["adebanjiadelowo/multimodal-visual-rag-src"],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

@@ -105,8 +105,14 @@ def split_sentences(text: str) -> list[str]:
 class NLIScorer:
     """Entailment probabilities from an NLI cross-encoder."""
 
-    def __init__(self, model: str = "cross-encoder/nli-deberta-v3-xsmall", device: str = "cpu"):
+    def __init__(self, model: str = "cross-encoder/nli-deberta-v3-xsmall", device: str = "auto"):
         from sentence_transformers import CrossEncoder
+
+        if device == "auto":
+            # CUDA when present; otherwise CPU, which leaves MPS memory to the generator.
+            import torch
+
+            device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.model_name = model
         self.model = CrossEncoder(model, device=device)

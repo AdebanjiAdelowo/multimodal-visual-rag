@@ -23,10 +23,13 @@ Environment overrides (all optional):
   MMRAG_N_QUERIES   answerable questions per generator (default 60; 0 = all 215)
   MMRAG_N_OOD       out-of-domain questions (default 30)
   MMRAG_TAG         suffix of the result directories (default t4)
+  MMRAG_BUDGET_HOURS  wall-clock budget; commands that would start after it are
+                      skipped and recorded, so the session ends cleanly (default 10.5)
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -37,13 +40,19 @@ from pathlib import Path
 
 SOURCE = Path(os.environ.get("MMRAG_SOURCE", "/kaggle/input"))  # searched for the source tree
 WORK = Path(os.environ.get("MMRAG_WORK", "/kaggle/working"))
-ALL_STAGES = ["data", "retrieval", "captions", "generation", "ablations"]
+# Order is priority order: later stages are the first to be skipped if time runs out.
+ALL_STAGES = ["data", "retrieval", "captions", "generation", "ablations", "generation_8b"]
 STAGES = [s for s in os.environ.get("MMRAG_STAGES", ",".join(ALL_STAGES)).split(",") if s]
-ALL_GENERATORS = ["smolvlm_500m", "qwen3vl_2b", "qwen3vl_4b", "qwen3vl_8b_4bit"]
+ALL_GENERATORS = ["smolvlm_500m", "qwen3vl_2b", "qwen3vl_4b"]
 GENERATORS = [
     g for g in os.environ.get("MMRAG_GENERATORS", ",".join(ALL_GENERATORS)).split(",") if g
 ]
 TAG = os.environ.get("MMRAG_TAG", "t4")
+BUDGET_S = float(os.environ.get("MMRAG_BUDGET_HOURS", "10.5")) * 3600
+T_START = time.time()
+# Scratch space for the source copy, the benchmark and model weights. On Kaggle it is
+# outside /kaggle/working, so page images and page text never enter the notebook output.
+SCRATCH = Path(os.environ.get("MMRAG_SCRATCH", "/kaggle/temp"))
 RESULTS, RUNS = f"results_{TAG}", f"artifacts/runs_{TAG}"
 
 CORPUS = "data/processed/vidore_v3_computer_science"
@@ -58,6 +67,16 @@ N_QUERIES = os.environ.get("MMRAG_N_QUERIES", "60")
 N_OOD = os.environ.get("MMRAG_N_OOD", "30")
 RET_OUT = ["--out", f"{RESULTS}/retrieval", "--runs", f"{RUNS}/retrieval"]
 GEN_OUT = ["--out", f"{RESULTS}/generation", "--runs", f"{RUNS}/generation"]
+
+
+def generation_command(model: str) -> list[str]:
+    return [
+        "mmrag", "eval-generation", "-c", CORPUS, "--retrieval", BEST_RETRIEVAL,
+        "--n-queries", N_QUERIES, "--n-ood", N_OOD, "--oracle", *GEN_OUT,
+        *[f"{GEN}/{model}_{t}.yaml"
+          for t in ("closed_book", "text_rag", "image_rag", "image_text_rag")],
+    ]  # fmt: skip
+
 
 COMMANDS: dict[str, list[list[str]]] = {
     "data": [
@@ -103,27 +122,9 @@ COMMANDS: dict[str, list[list[str]]] = {
         ],  # fmt: skip
     ],
     # Small vs larger generators, all four evidence modes, identical evidence.
-    "generation": [
-        [
-            "mmrag",
-            "eval-generation",
-            "-c",
-            CORPUS,
-            "--retrieval",
-            BEST_RETRIEVAL,
-            "--n-queries",
-            N_QUERIES,
-            "--n-ood",
-            N_OOD,
-            "--oracle",
-            *GEN_OUT,
-        ]
-        + [
-            f"{GEN}/{m}_{t}.yaml"
-            for t in ("closed_book", "text_rag", "image_rag", "image_text_rag")
-        ]
-        for m in GENERATORS
-    ],  # fmt: skip
+    "generation": [generation_command(m) for m in GENERATORS],
+    # The 8B generator in 4-bit: slowest and least certain to fit, so it runs last.
+    "generation_8b": [generation_command("qwen3vl_8b_4bit")],
     # Number of pages, image resolution and text budget, with the 4B generator.
     "ablations": [
         *[
@@ -205,23 +206,51 @@ def find_source() -> Path:
     )
 
 
+def source_commit(src: Path) -> str:
+    """Commit the source bundle was built from (written next to it by `make kaggle-kernel`)."""
+    for p in [src / "COMMIT", *SOURCE.rglob("COMMIT")]:
+        if p.is_file():
+            return p.read_text().strip()
+    return "unknown"
+
+
 def main() -> None:
-    repo = WORK / "multimodal-visual-rag"
+    SCRATCH.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("HF_HOME", str(SCRATCH / "hf"))
+    src = find_source()
+    commit = source_commit(src)
+    print(f"source commit: {commit}", flush=True)
+    repo = SCRATCH / "multimodal-visual-rag"
     if not repo.exists():
-        shutil.copytree(find_source(), repo)  # /kaggle/input is read-only
+        shutil.copytree(src, repo)  # /kaggle/input is read-only
+    subprocess.run(["apt-get", "update", "-qq"], check=False, capture_output=True)
     sh(["apt-get", "install", "-y", "-qq", "tesseract-ocr"])
-    sh([sys.executable, "-m", "pip", "install", "-q", "-e", ".[models,late,quant]"], cwd=repo)
+    # The hosted Python may be newer than the range the package declares.
+    sh([sys.executable, "-m", "pip", "install", "-q", "--ignore-requires-python",
+        "-e", ".[models,late,quant]"], cwd=repo)  # fmt: skip
     print(subprocess.run(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"],
                          capture_output=True, text=True).stdout, flush=True)  # fmt: skip
 
     log = []
+    archive = ""
     for stage in STAGES:
-        entry = {"stage": stage, "status": "completed", "commands": [], "failed_commands": []}
+        entry = {
+            "stage": stage, "status": "completed", "commands": [],
+            "failed_commands": [], "skipped_commands": [],
+        }  # fmt: skip
         t0 = time.perf_counter()
         for cmd in COMMANDS[stage]:
+            if time.time() - T_START > BUDGET_S:
+                print(f"SKIPPED (time budget): {' '.join(cmd)}", flush=True)
+                entry["status"] = "partial" if entry["commands"] else "skipped"
+                entry["skipped_commands"].append(" ".join(cmd))
+                continue
+            t_cmd = time.perf_counter()
             try:
                 sh(cmd, cwd=repo)
-                entry["commands"].append(" ".join(cmd))
+                entry["commands"].append(
+                    {"command": " ".join(cmd), "seconds": round(time.perf_counter() - t_cmd, 1)}
+                )
             except subprocess.CalledProcessError as e:
                 # A failed command is recorded and the stage moves on, so one generator
                 # running out of memory does not cost the others. Its results are absent.
@@ -230,15 +259,18 @@ def main() -> None:
                 entry["failed_commands"].append(" ".join(cmd))
                 if stage == "data":
                     break
+            archive = write_archive(repo, [*log, {**entry, "seconds": None}], commit)
         entry["seconds"] = round(time.perf_counter() - t0, 1)
         log.append(entry)
-        archive = write_archive(repo, log)
+        archive = write_archive(repo, log, commit)
         if stage == "data" and entry["status"] == "failed":
             sys.exit("The data stage failed; nothing else can run.")
 
     print(f"\nresults archive: {archive}")
+    if archive:
+        print(f"sha256: {hashlib.sha256(Path(archive).read_bytes()).hexdigest()}")
     for e in log:
-        print(f"  {e['stage']:<12} {e['status']:<10} {e['seconds']:>9.1f} s")
+        print(f"  {e['stage']:<14} {e['status']:<10} {e['seconds']:>9.1f} s")
 
 
 def model_revisions() -> dict[str, str]:
@@ -250,8 +282,8 @@ def model_revisions() -> dict[str, str]:
     return out
 
 
-def write_archive(repo: Path, log: list[dict]) -> str:
-    """Compile the report and zip everything produced so far. Called after every stage."""
+def write_archive(repo: Path, log: list[dict], commit: str) -> str:
+    """Compile the report and zip everything produced so far. Called after every command."""
     out = WORK / "mmrag_results"
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
@@ -266,6 +298,8 @@ def write_archive(repo: Path, log: list[dict]) -> str:
     ).stdout.splitlines()
     session = {
         "tag": TAG,
+        "source_commit": commit,
+        "elapsed_hours": round((time.time() - T_START) / 3600, 2),
         "stages": log,
         "n_queries": N_QUERIES,
         "n_ood": N_OOD,
@@ -274,7 +308,16 @@ def write_archive(repo: Path, log: list[dict]) -> str:
         "packages": freeze,
     }
     (out / f"session_{TAG}.json").write_text(json.dumps(session, indent=2))
-    return shutil.make_archive(str(out), "zip", out)
+    # Checksums of every file, so the archive can be verified after download.
+    lines = [
+        f"{hashlib.sha256(f.read_bytes()).hexdigest()}  {f.relative_to(out).as_posix()}"
+        for f in sorted(out.rglob("*"))
+        if f.is_file()
+    ]
+    (out / "SHA256SUMS").write_text("\n".join(lines) + "\n")
+    archive = shutil.make_archive(str(out), "zip", out)
+    shutil.rmtree(out)  # keep only the archive in the notebook output
+    return archive
 
 
 if __name__ == "__main__":

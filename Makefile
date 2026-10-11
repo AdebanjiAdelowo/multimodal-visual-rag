@@ -1,7 +1,7 @@
 CORPUS ?= data/processed/vidore_v3_computer_science
 RETRIEVAL ?= configs/retrieval/*.yaml
 
-.PHONY: install test lint data ocr retrieval report api ui kaggle-bundle
+.PHONY: install test lint data ocr retrieval report api ui kaggle-bundle kaggle-kernel
 
 install:
 	uv venv --python 3.12 && uv pip install -e ".[models,app,dev]"
@@ -34,3 +34,15 @@ ui:
 # Source archive of the current commit, to upload as a Kaggle dataset.
 kaggle-bundle:
 	git archive --format=zip --prefix=multimodal-visual-rag/ -o kaggle/mmrag-src.zip HEAD
+
+# Upload folders for the Kaggle API, built from the committed tree only:
+#   kaggle/build/dataset  source archive + the commit it was made from
+#   kaggle/build/kernel   the runner script and its kernel metadata
+kaggle-kernel:
+	@git diff --quiet HEAD || (echo "commit or stash changes first: the bundle is built from HEAD" && exit 1)
+	rm -rf kaggle/build && mkdir -p kaggle/build/dataset kaggle/build/kernel
+	git archive --format=zip --prefix=multimodal-visual-rag/ -o kaggle/build/dataset/mmrag-src.zip HEAD
+	git rev-parse HEAD > kaggle/build/dataset/COMMIT
+	cp kaggle/dataset-metadata.json kaggle/build/dataset/
+	git show HEAD:kaggle/run_gpu.py > kaggle/build/kernel/run_gpu.py
+	cp kaggle/kernel-metadata.json kaggle/build/kernel/
