@@ -1,7 +1,7 @@
 CORPUS ?= data/processed/vidore_v3_computer_science
 RETRIEVAL ?= configs/retrieval/*.yaml
 
-.PHONY: install test lint data ocr retrieval report api ui kaggle-bundle kaggle-kernel
+.PHONY: install test lint data ocr retrieval report api ui kaggle-bundle kaggle-kernel kaggle-submit kaggle-status
 
 install:
 	uv venv --python 3.12 && uv pip install -e ".[models,app,dev]"
@@ -46,3 +46,15 @@ kaggle-kernel:
 	cp kaggle/dataset-metadata.json kaggle/build/dataset/
 	git show HEAD:kaggle/run_gpu.py > kaggle/build/kernel/run_gpu.py
 	cp kaggle/kernel-metadata.json kaggle/build/kernel/
+
+# The Kaggle client is not a project dependency; point KAGGLE_PYTHON at an interpreter that has it.
+KAGGLE_PYTHON ?= python3
+KAGGLE = $(KAGGLE_PYTHON) kaggle/kaggle_ipv4.py
+KERNEL = adebanjiadelowo/multimodal-visual-rag-gpu
+
+# Start the batch job from the folder built by `make kaggle-kernel` (uses GPU quota).
+kaggle-submit:
+	$(KAGGLE) kernels push -p kaggle/build/kernel --accelerator NvidiaTeslaT4
+
+kaggle-status:
+	$(KAGGLE) kernels status $(KERNEL)

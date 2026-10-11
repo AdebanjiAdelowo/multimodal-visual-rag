@@ -10,9 +10,11 @@ With the Kaggle command-line client (the route used for this project; it runs as
 make kaggle-kernel                                   # builds kaggle/build/{dataset,kernel} from HEAD
 kaggle datasets create -p kaggle/build/dataset       # first time (private by default)
 kaggle datasets version -p kaggle/build/dataset -m "source at $(git rev-parse --short HEAD)"   # later updates
-kaggle kernels push -p kaggle/build/kernel --accelerator NvidiaTeslaT4
-kaggle kernels status adebanjiadelowo/multimodal-visual-rag-gpu
+kaggle kernels push -p kaggle/build/kernel --accelerator NvidiaTeslaT4     # or: make kaggle-submit
+kaggle kernels status adebanjiadelowo/multimodal-visual-rag-gpu            # or: make kaggle-status
 ```
+
+If the client hangs during an upload, use `python kaggle/kaggle_ipv4.py` in place of `kaggle` (the make targets do). An account can run two GPU batch jobs at a time; a push beyond that is refused and can simply be repeated later.
 
 `make kaggle-kernel` refuses to run with uncommitted changes, so the uploaded source always corresponds to one commit. That commit is stored in the dataset (`COMMIT`) and copied into the session record of the results.
 
