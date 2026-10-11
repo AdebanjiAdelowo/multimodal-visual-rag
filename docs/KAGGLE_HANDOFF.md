@@ -101,3 +101,10 @@ Local results in `results/` are never overwritten by this procedure. After impor
 - Inspect existing results before any rerun. If the kernel shows `COMPLETE`, retrieve its output; do not submit again.
 - Do not poll or wait for the job inside a Claude session.
 - Do not push to GitHub, and do not cancel or modify other projects' Kaggle jobs.
+
+## Colab smoke-test preparation (2026-10-12)
+
+An isolated Qwen3-VL-2B Colab notebook and CUDA-only runner are prepared.
+See [COLAB_HANDOFF.md](COLAB_HANDOFF.md) for source checksums, persistent outputs,
+manual execution and estimated stage feasibility. No full suite or new Kaggle
+submission is authorized by this work. Colab execution remains unverified.

@@ -77,3 +77,10 @@ uptime; sysctl -n vm.swapusage; df -h /System/Volumes/Data | tail -1
 ```
 
 All models needed for the pending local runs are already in the Hugging Face cache (bge-small, MiniLM reranker, SigLIP2, ColSmol-256M, SmolVLM-500M, Qwen3-VL-2B, nli-deberta-v3-xsmall), so the runs work with `HF_HUB_OFFLINE=1`.
+
+## Colab smoke-test preparation (2026-10-12)
+
+An isolated Qwen3-VL-2B Colab notebook and CUDA-only runner are prepared.
+See [COLAB_HANDOFF.md](COLAB_HANDOFF.md) for source checksums, persistent outputs,
+manual execution and estimated stage feasibility. No full suite or new Kaggle
+submission is authorized by this work. Colab execution remains unverified.

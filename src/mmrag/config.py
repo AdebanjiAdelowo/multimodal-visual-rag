@@ -87,6 +87,7 @@ class RetrievalCfg(_Cfg):
 class VLMCfg(_Cfg):
     backend: Literal["transformers", "mock"] = "transformers"
     model: str = "HuggingFaceTB/SmolVLM-500M-Instruct"
+    revision: str | None = None
     dtype: Literal["auto", "float16", "bfloat16", "float32"] = "auto"
     load_in_4bit: bool = False  # CUDA + bitsandbytes only
     max_new_tokens: int = 160

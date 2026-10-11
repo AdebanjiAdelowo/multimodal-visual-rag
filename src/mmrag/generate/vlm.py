@@ -75,8 +75,10 @@ class TransformersVLM:
                 bnb_4bit_compute_dtype=torch.float16,
             )
             kwargs["device_map"] = {"": 0}
-        self.processor = AutoProcessor.from_pretrained(cfg.model)
-        self.model = AutoModelForImageTextToText.from_pretrained(cfg.model, **kwargs)
+        self.processor = AutoProcessor.from_pretrained(cfg.model, revision=cfg.revision)
+        self.model = AutoModelForImageTextToText.from_pretrained(
+            cfg.model, revision=cfg.revision, **kwargs
+        )
         if not cfg.load_in_4bit:
             self.model.to(self.device)
         self.model.eval()

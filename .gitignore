@@ -24,3 +24,5 @@ build/
 # Secrets
 .env
 kaggle.json
+
+/colab_outputs/
