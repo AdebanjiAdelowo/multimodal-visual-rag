@@ -58,3 +58,25 @@ The smoke test needs none of those benchmark assets or indexes.
 Resume only survives Colab replacement if corpus, indexes and per-query run files
 are stored persistently; the existing Kaggle runner's scratch defaults do not
 provide that on Colab. Do not invoke it unchanged from this notebook.
+
+## Browser execution attempt, 2026-10-12
+
+Notebook uploaded successfully to:
+https://colab.research.google.com/drive/1R6Bq_A5vZVbA9jkZThca0Q7xVdLfGdYi
+
+T4 was selected and only the first diagnostic cell was queued. The browser
+remained at **Connecting / Allocating runtime**, with the cell unexecuted when
+handed off. This is not a confirmed quota failure; the underlying reason is
+unknown. No model download, inference, or Drive mount was started. No GPU type,
+latency or peak VRAM was measured. If allocation completes, continue from the
+Drive cell using the instructions above. If it does not, retry allocation manually.
+
+Prepared bundle (297 KB):
+- commit `6968e5fa3f6cee4b93f49a5eaf5d07e3607fd707`
+- SHA-256 `4b208806a5b75e54b7d8029b771170857c3646dad16157374cc27d309c969402`
+- `colab_outputs/source/mmrag-6968e5fa3f6cee4b93f49a5eaf5d07e3607fd707.zip`
+
+Local validation: 45 tests passed; Ruff lint and format checks passed; notebook
+code parsed with Python AST; archived source checksum and exclusions verified;
+no model weights or credential files tracked. Existing `results/` unchanged.
+An additional mocked no-CUDA check verified failure reporting without model loading.

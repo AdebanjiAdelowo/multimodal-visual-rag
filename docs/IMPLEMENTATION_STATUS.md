@@ -84,3 +84,7 @@ An isolated Qwen3-VL-2B Colab notebook and CUDA-only runner are prepared.
 See [COLAB_HANDOFF.md](COLAB_HANDOFF.md) for source checksums, persistent outputs,
 manual execution and estimated stage feasibility. No full suite or new Kaggle
 submission is authorized by this work. Colab execution remains unverified.
+
+Colab browser attempt: notebook uploaded; T4 requested; diagnostic cell remained
+queued at runtime allocation. No remote GPU measurements. Local checks: 45 tests
+and Ruff pass. The exact notebook link and checksummed bundle are in COLAB_HANDOFF.md.
