@@ -95,27 +95,54 @@ The full protocol and the known weaknesses of each automatic metric are in [docs
 
 ## Results
 
-Results below are for the text-based retrieval strategies on the full corpus (1,360 pages, 215 queries), run on an Apple M3 Pro with 18 GB of memory. Brackets are 95% bootstrap intervals. The complete tables, including paired comparisons, are in [results/SUMMARY.md](results/SUMMARY.md). The status of every other experiment, with the exact command for each, is in [docs/experiments.md](docs/experiments.md).
+All numbers below were measured on an Apple M3 Pro with 18 GB of memory. Brackets are 95% bootstrap intervals. The complete tables, including every paired comparison, are generated from the result files into [results/SUMMARY.md](results/SUMMARY.md). Experiments that need a CUDA GPU (ColQwen2, caption-based retrieval, larger generators) are listed with their commands in [docs/experiments.md](docs/experiments.md).
+
+### Retrieval
+
+Full corpus: 1,360 pages, 215 queries.
 
 | Strategy | R@1 | R@5 | R@10 | nDCG@10 | MRR@10 | Full R@10 | nDCG@10 visual | nDCG@10 text-only | ms/query |
 |---|---|---|---|---|---|---|---|---|---|
-| BM25 + dense OCR (RRF) + cross-encoder rerank | 0.272 | 0.600 | 0.719 | 0.689 [0.653, 0.725] | 0.845 | 0.433 | 0.651 | 0.737 | 467 |
-| BM25 + dense OCR (RRF) | 0.284 | 0.584 | 0.713 | 0.689 [0.652, 0.725] | 0.841 | 0.433 | 0.658 | 0.728 | 38 |
-| Dense text over OCR (bge-small) | 0.268 | 0.561 | 0.686 | 0.663 [0.627, 0.697] | 0.831 | 0.381 | 0.630 | 0.704 | 33 |
-| Dense text over dataset parser text | 0.256 | 0.558 | 0.662 | 0.648 [0.613, 0.682] | 0.823 | 0.349 | 0.633 | 0.667 | 32 |
-| BM25 over dataset parser text | 0.267 | 0.526 | 0.650 | 0.635 [0.597, 0.675] | 0.804 | 0.377 | 0.610 | 0.666 | 2.3 |
-| BM25 over OCR | 0.265 | 0.525 | 0.651 | 0.633 [0.595, 0.673] | 0.809 | 0.372 | 0.605 | 0.669 | 2.4 |
+| BM25 + dense OCR + ColSmol (RRF) | 0.272 | 0.604 | 0.726 | 0.695 [0.661, 0.727] | 0.845 | 0.428 | 0.662 | 0.737 | 76 |
+| BM25 + dense OCR (RRF) + cross-encoder rerank | 0.272 | 0.600 | 0.719 | 0.689 [0.653, 0.725] | 0.845 | 0.433 | 0.651 | 0.737 | 271 |
+| BM25 + dense OCR (RRF) | 0.284 | 0.584 | 0.713 | 0.689 [0.652, 0.725] | 0.841 | 0.433 | 0.658 | 0.728 | 14 |
+| BM25 + dense OCR + SigLIP2 at weight 0.25 (RRF) | 0.247 | 0.577 | 0.713 | 0.666 [0.631, 0.698] | 0.810 | 0.419 | 0.644 | 0.694 | 23 |
+| Dense text over OCR (bge-small) | 0.268 | 0.561 | 0.686 | 0.663 [0.627, 0.697] | 0.831 | 0.381 | 0.630 | 0.704 | 11 |
+| BM25 over OCR | 0.265 | 0.525 | 0.651 | 0.633 [0.595, 0.673] | 0.809 | 0.372 | 0.605 | 0.669 | 1.2 |
+| ColSmol-256M late interaction (page images only) | 0.241 | 0.521 | 0.644 | 0.608 [0.568, 0.647] | 0.750 | 0.372 | 0.572 | 0.653 | 66 |
+| BM25 + dense OCR + SigLIP2 at equal weight (RRF) | 0.168 | 0.459 | 0.664 | 0.556 [0.525, 0.588] | 0.687 | 0.353 | 0.532 | 0.586 | 23 |
+| SigLIP2 base, 224 px, one vector per page | 0.034 | 0.072 | 0.103 | 0.094 [0.071, 0.119] | 0.176 | 0.023 | 0.084 | 0.107 | 9.8 |
 
-Findings supported by these runs:
+Findings, with paired bootstrap differences in nDCG@10 over the same queries:
 
-- **Hybrid text retrieval is the strongest text configuration.** Fusing BM25 and dense rankings raises nDCG@10 from 0.663 (dense alone) to 0.689, a paired difference of +0.026 [+0.001, +0.050], p = 0.046. The gain over BM25 alone is +0.056.
-- **Dense and lexical retrieval are not separable at this sample size.** Dense minus BM25 is +0.030 [-0.006, +0.066], p = 0.11.
-- **Cross-encoder reranking does not pay for itself here.** Reranking the top 20 with an MS MARCO MiniLM cross-encoder changes nDCG@10 by +0.001 [-0.024, +0.025] while raising latency from 38 ms to 467 ms per query. On queries with visual evidence the point estimate is slightly negative (-0.006), consistent with a text-only reranker being unable to see tables and figures.
-- **OCR quality is not the bottleneck on this corpus.** Tesseract text and the parser text shipped with the dataset give the same BM25 quality (difference +0.002 [-0.007, +0.010]). The pages are clean born-digital renders, so this should not be assumed for scanned documents.
-- **Visually grounded questions are harder for every text strategy.** nDCG@10 is 0.03 to 0.09 lower on queries whose gold evidence includes a table, chart, infographic or image than on text-only queries.
-- **Complete evidence sets are rarely retrieved.** Even the best strategy places all relevant pages in the top 10 for only 43% of queries, which bounds what a generator restricted to a few pages can cite.
+- **Image-based retrieval did not beat text retrieval on visually grounded questions (RQ1).** On the 119 queries whose evidence includes a table, chart, infographic or image, ColSmol late interaction scores 0.572 against 0.630 for dense OCR text (-0.057 [-0.111, -0.010], p = 0.018). The pages are born-digital textbook pages on which OCR is close to perfect, so this result should not be extended to scans or photographs.
+- **The kind of visual embedding matters far more than its presence (RQ2).** A single 224 px SigLIP2 vector per page is close to unusable for this task (0.094), while patch-level late interaction with a much smaller model reaches 0.608 (+0.514 [+0.469, +0.559]). OCR text from Tesseract matches the parser text shipped with the dataset (+0.002 [-0.007, +0.010]).
+- **Hybrid retrieval helps within text and is neutral across modalities (RQ3).** Fusing BM25 and dense rankings improves on dense alone (+0.026 [+0.001, +0.050], p = 0.046, uncorrected). Adding ColSmol to the text hybrid changes nDCG@10 by +0.007 [-0.011, +0.024]. Adding SigLIP2 at equal weight lowers it by 0.133 [-0.164, -0.103], and still by 0.023 at a quarter of the weight: rank fusion does not protect against a weak component.
+- **Reranking is not worth its cost on a strong first stage (RQ4).** A MiniLM cross-encoder over the top 20 changes the text hybrid by +0.001 [-0.024, +0.025] at about 20 times the latency (14 ms to 271 ms). It does repair a damaged ranking: the equal-weight SigLIP hybrid recovers from 0.556 to 0.691.
+- **Complete evidence sets are rarely retrieved.** The best strategy places every relevant page in the top 10 for 43% of queries.
+- **Human-written queries are easier than synthetic ones for lexical retrieval.** BM25 scores 0.676 on the 110 human-written queries and 0.589 on the 105 synthetic ones, so the synthetic queries do not favour word overlap with the page text.
 
-Latency figures were measured on a machine shared with other workloads and should be read as indicative.
+### Generation
+
+SmolVLM-500M (float16, Apple MPS) on 60 answerable questions sampled with a fixed seed, the same 60 with every relevant page withheld, and 30 questions written for a different corpus. Retrieval is the text hybrid; every evidence mode receives the same three pages.
+
+| Evidence given to the model | Token F1 | ROUGE-L | Abstains, evidence withheld | Abstains, out of domain | Cites a page | Generation s |
+|---|---|---|---|---|---|---|
+| None (direct model) | 0.251 [0.198, 0.305] | 0.203 | n/a | 0.367 | n/a | 0.72 |
+| OCR text of retrieved pages | 0.343 [0.285, 0.406] | 0.290 | 0.017 | 0.100 | 0.067 | 1.43 |
+| Images of retrieved pages | 0.299 [0.239, 0.364] | 0.248 | 0.000 | 0.033 | 0.100 | 1.80 |
+| Images and OCR text | 0.290 [0.233, 0.346] | 0.249 | 0.000 | 0.000 | 0.067 | 2.29 |
+| Images of the annotated relevant pages | 0.306 [0.245, 0.369] | 0.260 | n/a | n/a | 0.085 | 1.64 |
+
+Findings:
+
+- **Retrieved text improves a small model; retrieved page images do not clearly do so.** Text RAG gains +0.093 token F1 over the direct model ([+0.032, +0.159], p = 0.003). Image RAG gains +0.049 ([-0.026, +0.124], p = 0.20). Text against image evidence is not separable at this sample size (-0.044 [-0.111, +0.020]).
+- **A 0.5 B parameter model does not abstain when the evidence is missing (RQ5).** With every relevant page withheld it still answers 98 to 100% of the questions, and it answers 90 to 100% of out-of-domain questions when given retrieved pages. It abstains more often with no evidence at all (37% out of domain) than with irrelevant evidence: supplying pages makes it more willing to answer, whatever they contain.
+- **The citation format is mostly ignored.** A page is cited in 7 to 10% of answers, so citation precision and recall rest on about five answers per system and are not interpretable for this model.
+- **Better retrieval would not fix the generator.** Giving the model the annotated relevant pages instead of the retrieved ones changes token F1 by +0.006 [-0.035, +0.050].
+- **Token log-probability is a weak grounding signal.** Its AUROC for separating answers produced with a relevant page in context from answers produced without one is 0.53 to 0.63.
+
+Token F1 against full-sentence reference answers understates correctness, and the faithfulness metric cannot credit support that exists only in pixels; both limitations are described in [docs/evaluation.md](docs/evaluation.md). Outputs are deterministic: a repeated run reproduced all 240 direct and text-RAG answers exactly.
 
 ## Installation
 

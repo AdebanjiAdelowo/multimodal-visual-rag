@@ -4,17 +4,21 @@
 
 ## Setup
 
-1. From the repository root, create a source archive of the current commit:
+With the Kaggle command-line client (the route used for this project; it runs as a batch job that needs no open browser):
 
-   ```bash
-   make kaggle-bundle        # writes kaggle/mmrag-src.zip (about 0.3 MB, source only)
-   ```
+```bash
+make kaggle-kernel                                   # builds kaggle/build/{dataset,kernel} from HEAD
+kaggle datasets create -p kaggle/build/dataset       # first time (private by default)
+kaggle datasets version -p kaggle/build/dataset -m "source at $(git rev-parse --short HEAD)"   # later updates
+kaggle kernels push -p kaggle/build/kernel --accelerator NvidiaTeslaT4
+kaggle kernels status adebanjiadelowo/multimodal-visual-rag-gpu
+```
 
-2. Upload `kaggle/mmrag-src.zip` to Kaggle as a private dataset.
-3. Create a notebook with the accelerator set to "GPU T4 x2" and internet enabled. Attach the dataset.
-4. Paste the contents of `run_gpu.py` into a cell. To run a subset, set the environment variables below in a cell above it. Run.
+`make kaggle-kernel` refuses to run with uncommitted changes, so the uploaded source always corresponds to one commit. That commit is stored in the dataset (`COMMIT`) and copied into the session record of the results.
 
-No credentials are required: the benchmark and all models are public and ungated (checked against the Hugging Face API on 2026-10-11; all are Apache-2.0 or MIT except CLIP ViT-B/32, whose model card declares no licence tag).
+By hand instead: run `make kaggle-bundle`, upload `kaggle/mmrag-src.zip` as a private dataset, create a notebook with a GPU and internet enabled, attach the dataset, and paste `run_gpu.py` into a cell.
+
+No credentials are required inside the job: the benchmark and all models are public and ungated (checked against the Hugging Face API on 2026-10-11; all are Apache-2.0 or MIT except CLIP ViT-B/32, whose model card declares no licence tag).
 
 ## Stages
 
@@ -23,58 +27,53 @@ No credentials are required: the benchmark and all models are public and ungated
 | `data` | benchmark download, Tesseract OCR, out-of-domain queries | 0.5 GB |
 | `retrieval` | all sixteen first-stage, hybrid and reranked strategies on one machine | SigLIP2 1.4 GB, CLIP 0.6 GB, ColSmol 0.5 GB, ColQwen2 8.3 GB |
 | `captions` | captions for 1,360 pages with SmolVLM-500M and Qwen3-VL-4B, then BM25 and dense retrieval over each caption set | 1.0 GB, 8.3 GB |
-| `generation` | each generator in four evidence modes plus the oracle variant | 1.0 GB, 4.0 GB, 8.3 GB, 16.3 GB |
+| `generation` | SmolVLM-500M, Qwen3-VL-2B and Qwen3-VL-4B, each in four evidence modes plus the oracle variant | 1.0 GB, 4.0 GB, 8.3 GB |
 | `ablations` | page count (1, 2, 5), image resolution (512, 768, 1536) and text budget (800, 5000 characters) with Qwen3-VL-4B | none new |
+| `generation_8b` | Qwen3-VL-8B in 4-bit, same design as `generation` | 16.3 GB |
 
-`data` must run first in every new session. The other stages are independent of each other.
+`data` must run first in every new session. The other stages are independent of each other and run in the order listed, which is priority order: when the time budget is reached, the remaining commands are skipped and recorded rather than cut off mid-run.
 
 ## Options
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `MMRAG_STAGES` | all five | comma-separated stages to run |
-| `MMRAG_GENERATORS` | `smolvlm_500m,qwen3vl_2b,qwen3vl_4b,qwen3vl_8b_4bit` | generators used by the `generation` stage |
+| `MMRAG_STAGES` | all six | comma-separated stages to run |
+| `MMRAG_GENERATORS` | `smolvlm_500m,qwen3vl_2b,qwen3vl_4b` | generators used by the `generation` stage |
 | `MMRAG_N_QUERIES` | `60` | answerable questions per generator; `0` uses all 215 |
 | `MMRAG_N_OOD` | `30` | out-of-domain questions |
 | `MMRAG_TAG` | `t4` | suffix of the output directories |
+| `MMRAG_BUDGET_HOURS` | `10.5` | no new command starts after this much wall-clock time |
 
 The defaults reproduce the local protocol (60 answerable questions, 30 out-of-domain questions, seed 13, text-hybrid retrieval), so every generator on every machine answers exactly the same examples and can be compared pairwise. With the defaults each generator produces 600 answers.
 
-Suggested split into sessions, each well inside the 12-hour limit:
-
-```python
-import os
-
-# Session A: retrieval and captions
-os.environ["MMRAG_STAGES"] = "data,retrieval,captions"
-# Session B: small generators
-os.environ["MMRAG_STAGES"] = "data,generation"
-os.environ["MMRAG_GENERATORS"] = "smolvlm_500m,qwen3vl_2b"
-# Session C: large generators
-os.environ["MMRAG_STAGES"] = "data,generation"
-os.environ["MMRAG_GENERATORS"] = "qwen3vl_4b,qwen3vl_8b_4bit"
-# Session D: ablations
-os.environ["MMRAG_STAGES"] = "data,ablations"
-```
-
-Use a different `MMRAG_TAG` only if the hardware differs; sessions with the same tag produce archives that merge cleanly because each holds different files.
+A batch job takes its settings from the defaults above, since a script kernel has no cell in which to set variables. To run a subset, edit the defaults at the top of the copy in `kaggle/build/kernel/run_gpu.py` before pushing, and note the change in the handoff file.
 
 ## Output
 
-`/kaggle/working/mmrag_results.zip` is rewritten after every stage, so a session that times out still leaves an archive of the stages that finished. It contains:
+`/kaggle/working/mmrag_results.zip` is rewritten after every command, so a job that stops early still leaves an archive of what finished. It contains:
 
 - `results_t4/`: metric JSON files and `SUMMARY.md`;
 - `artifacts/runs_t4/`: per-query records;
-- `session_t4.json`: stage status and duration, failed commands, the protocol settings, the commit of every model used and the installed package versions.
+- `session_t4.json`: source commit, stage status and durations, failed and skipped commands, the protocol settings, the commit of every model used and the installed package versions;
+- `SHA256SUMS`: a checksum for every file in the archive.
 
-Results are written under `results_t4/`, never `results/`, so unpacking the archive over the repository root cannot overwrite results measured locally. After unpacking:
+The source copy, the benchmark and the model weights live in `/kaggle/temp`, so the notebook output holds only the archive. It contains no page images and no page text. The per-query generation records do contain the benchmark's questions and reference answers, which are CC-BY-4.0.
+
+Retrieve and verify:
+
+```bash
+kaggle kernels output adebanjiadelowo/multimodal-visual-rag-gpu -p /tmp/mmrag_kaggle
+cd /tmp/mmrag_kaggle && unzip -q mmrag_results.zip -d unpacked && cd unpacked
+shasum -a 256 -c SHA256SUMS                 # every line must say OK
+python -m json.tool session_t4.json | head -40   # source_commit, stage status
+```
+
+Results are written under `results_t4/`, never `results/`, so copying them into the repository cannot overwrite results measured locally. After verification, copy `results_t4/` and `session_t4.json` into the repository root and `artifacts/runs_t4/` into `artifacts/`, then:
 
 ```bash
 mmrag report --results results_t4 --runs artifacts/runs_t4 --out results_t4/SUMMARY.md
-git add results_t4 && git commit -m "Add T4 results"
+git add results_t4 session_t4.json && git commit -m "Add T4 results"
 ```
-
-The archive contains no page images and no page text. The per-query generation records do contain the benchmark's questions and reference answers, which are CC-BY-4.0.
 
 ## Memory notes for a 16 GB T4
 
