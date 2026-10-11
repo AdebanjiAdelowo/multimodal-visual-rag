@@ -1,0 +1,249 @@
+{
+  "system": "smolvlm_500m_closed_book",
+  "config": {
+    "name": "smolvlm_500m_closed_book",
+    "vlm": {
+      "backend": "transformers",
+      "model": "HuggingFaceTB/SmolVLM-500M-Instruct",
+      "dtype": "auto",
+      "load_in_4bit": false,
+      "max_new_tokens": 160,
+      "device": "auto"
+    },
+    "evidence": {
+      "mode": "closed_book",
+      "max_pages": 3,
+      "image_max_side": 1024,
+      "text_source": "ocr_tesseract",
+      "max_chars_per_page": 2500
+    }
+  },
+  "conditions": {
+    "answerable": {
+      "n": 60,
+      "abstain_rate": {
+        "mean": 0.23333333333333334,
+        "lo": 0.13333333333333333,
+        "hi": 0.35,
+        "n": 60
+      },
+      "token_f1": {
+        "mean": 0.2507399241051124,
+        "lo": 0.1975334610473438,
+        "hi": 0.3050430101575866,
+        "n": 60
+      },
+      "token_recall": {
+        "mean": 0.324798966190589,
+        "lo": 0.2562229676283162,
+        "hi": 0.3936119836105921,
+        "n": 60
+      },
+      "rouge_l": {
+        "mean": 0.20347762986832113,
+        "lo": 0.15801738411627198,
+        "hi": 0.2516592813739283,
+        "n": 60
+      },
+      "boolean_accuracy": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 6
+      },
+      "answer_entailment": {
+        "mean": 0.09924034630530514,
+        "lo": 0.045251942423734974,
+        "hi": 0.1639047834909918,
+        "n": 60
+      },
+      "faithfulness": {
+        "mean": NaN,
+        "lo": NaN,
+        "hi": NaN,
+        "n": 0
+      },
+      "unsupported": {
+        "mean": NaN,
+        "lo": NaN,
+        "hi": NaN,
+        "n": 0
+      },
+      "citation_precision": {
+        "mean": NaN,
+        "lo": NaN,
+        "hi": NaN,
+        "n": 0
+      },
+      "citation_recall": {
+        "mean": NaN,
+        "lo": NaN,
+        "hi": NaN,
+        "n": 0
+      },
+      "has_citation": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 46
+      },
+      "invalid_citation": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 60
+      },
+      "gold_in_context": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 60
+      },
+      "subset:visual": {
+        "n": 33,
+        "token_f1": {
+          "mean": 0.2570954737653785,
+          "lo": 0.17799394678684152,
+          "hi": 0.3437647656839599,
+          "n": 33
+        },
+        "rouge_l": {
+          "mean": 0.20825745722206995,
+          "lo": 0.13957004061572145,
+          "hi": 0.2889346233825529,
+          "n": 33
+        },
+        "answer_entailment": {
+          "mean": 0.1361226232609514,
+          "lo": 0.05572248163110943,
+          "hi": 0.239000471820349,
+          "n": 33
+        },
+        "abstained": {
+          "mean": 0.24242424242424243,
+          "lo": 0.09090909090909091,
+          "hi": 0.3939393939393939,
+          "n": 33
+        }
+      },
+      "subset:text_only": {
+        "n": 27,
+        "token_f1": {
+          "mean": 0.24297203007589832,
+          "lo": 0.17935947724250245,
+          "hi": 0.31221574714465394,
+          "n": 27
+        },
+        "rouge_l": {
+          "mean": 0.19763561865818374,
+          "lo": 0.14131886855464473,
+          "hi": 0.2572857638464356,
+          "n": 27
+        },
+        "answer_entailment": {
+          "mean": 0.0541620078039597,
+          "lo": 0.010039420052554407,
+          "hi": 0.13236271380759443,
+          "n": 27
+        },
+        "abstained": {
+          "mean": 0.2222222222222222,
+          "lo": 0.07407407407407407,
+          "hi": 0.37037037037037035,
+          "n": 27
+        }
+      },
+      "subset:gold_in_context": {
+        "n": 0,
+        "token_f1": {
+          "mean": NaN,
+          "lo": NaN,
+          "hi": NaN,
+          "n": 0
+        },
+        "rouge_l": {
+          "mean": NaN,
+          "lo": NaN,
+          "hi": NaN,
+          "n": 0
+        },
+        "answer_entailment": {
+          "mean": NaN,
+          "lo": NaN,
+          "hi": NaN,
+          "n": 0
+        },
+        "abstained": {
+          "mean": NaN,
+          "lo": NaN,
+          "hi": NaN,
+          "n": 0
+        }
+      }
+    },
+    "out_of_domain": {
+      "n": 30,
+      "abstain_rate": {
+        "mean": 0.36666666666666664,
+        "lo": 0.2,
+        "hi": 0.5333333333333333,
+        "n": 30
+      },
+      "unsupported_answer_rate": {
+        "mean": 0.6333333333333333,
+        "lo": 0.4666666666666667,
+        "hi": 0.8,
+        "n": 30
+      }
+    }
+  },
+  "confidence": {
+    "signal": "mean_token_logprob",
+    "auroc_gold_in_context": NaN,
+    "n": 46
+  },
+  "systems": {
+    "model": {
+      "model": "HuggingFaceTB/SmolVLM-500M-Instruct",
+      "device": "mps",
+      "dtype": "float16",
+      "load_in_4bit": false,
+      "params_m": 507.5,
+      "weights_mb": 967.9
+    },
+    "generation_latency_s": {
+      "mean": 0.7158951203337993,
+      "lo": 0.5915816918840291,
+      "hi": 0.8428688854664788,
+      "n": 90
+    },
+    "input_tokens": {
+      "mean": 84.85555555555555,
+      "lo": 83.28861111111111,
+      "hi": 86.46666666666667,
+      "n": 90
+    },
+    "output_tokens": {
+      "mean": 72.7,
+      "lo": 59.48888888888889,
+      "hi": 86.04527777777778,
+      "n": 90
+    },
+    "peak_rss_mb": 2008.3,
+    "mps_allocated_mb": 1095.2,
+    "mps_driver_allocated_mb": 2120.7
+  },
+  "retrieval": "hybrid_text",
+  "corpus": "vidore_v3_computer_science",
+  "seed": 13,
+  "hardware": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "machine": "arm64",
+    "python": "3.12.2",
+    "cpu_count": 11,
+    "ram_gb": 18.0,
+    "torch": "2.13.0",
+    "device": "mps"
+  },
+  "faithfulness_text_source": "parser_markdown"
+}

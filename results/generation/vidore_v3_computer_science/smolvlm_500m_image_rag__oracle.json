@@ -1,0 +1,234 @@
+{
+  "system": "smolvlm_500m_image_rag__oracle",
+  "config": {
+    "name": "smolvlm_500m_image_rag",
+    "vlm": {
+      "backend": "transformers",
+      "model": "HuggingFaceTB/SmolVLM-500M-Instruct",
+      "dtype": "auto",
+      "load_in_4bit": false,
+      "max_new_tokens": 160,
+      "device": "auto"
+    },
+    "evidence": {
+      "mode": "image",
+      "max_pages": 3,
+      "image_max_side": 1024,
+      "text_source": "ocr_tesseract",
+      "max_chars_per_page": 2500
+    }
+  },
+  "conditions": {
+    "answerable": {
+      "n": 60,
+      "abstain_rate": {
+        "mean": 0.016666666666666666,
+        "lo": 0.0,
+        "hi": 0.05,
+        "n": 60
+      },
+      "token_f1": {
+        "mean": 0.3057006846914329,
+        "lo": 0.2445315392847814,
+        "hi": 0.36892497668034036,
+        "n": 60
+      },
+      "token_recall": {
+        "mean": 0.286950892895366,
+        "lo": 0.23093078345425333,
+        "hi": 0.3442870845839185,
+        "n": 60
+      },
+      "rouge_l": {
+        "mean": 0.2599055599056102,
+        "lo": 0.20269055870639566,
+        "hi": 0.3210656400525227,
+        "n": 60
+      },
+      "boolean_accuracy": {
+        "mean": 0.6666666666666666,
+        "lo": 0.3333333333333333,
+        "hi": 1.0,
+        "n": 6
+      },
+      "answer_entailment": {
+        "mean": 0.21502603247875715,
+        "lo": 0.12853293330574161,
+        "hi": 0.3094757674503489,
+        "n": 60
+      },
+      "faithfulness": {
+        "mean": 0.35070992886437186,
+        "lo": 0.2802716423170876,
+        "hi": 0.4254157159457539,
+        "n": 59
+      },
+      "unsupported": {
+        "mean": 0.6779661016949152,
+        "lo": 0.559322033898305,
+        "hi": 0.7966101694915254,
+        "n": 59
+      },
+      "citation_precision": {
+        "mean": 1.0,
+        "lo": 1.0,
+        "hi": 1.0,
+        "n": 5
+      },
+      "citation_recall": {
+        "mean": 0.06779661016949153,
+        "lo": 0.01694915254237288,
+        "hi": 0.13559322033898302,
+        "n": 59
+      },
+      "has_citation": {
+        "mean": 0.0847457627118644,
+        "lo": 0.01694915254237288,
+        "hi": 0.15254237288135594,
+        "n": 59
+      },
+      "invalid_citation": {
+        "mean": 0.15,
+        "lo": 0.06666666666666667,
+        "hi": 0.25,
+        "n": 60
+      },
+      "gold_in_context": {
+        "mean": 1.0,
+        "lo": 1.0,
+        "hi": 1.0,
+        "n": 60
+      },
+      "subset:visual": {
+        "n": 33,
+        "token_f1": {
+          "mean": 0.31435601304471145,
+          "lo": 0.2318359480861521,
+          "hi": 0.3941193339996806,
+          "n": 33
+        },
+        "rouge_l": {
+          "mean": 0.2614266269225118,
+          "lo": 0.18424813673509569,
+          "hi": 0.3409031880393819,
+          "n": 33
+        },
+        "answer_entailment": {
+          "mean": 0.21698693208952935,
+          "lo": 0.10789863875003047,
+          "hi": 0.34680367317076044,
+          "n": 33
+        },
+        "abstained": {
+          "mean": 0.0,
+          "lo": 0.0,
+          "hi": 0.0,
+          "n": 33
+        }
+      },
+      "subset:text_only": {
+        "n": 27,
+        "token_f1": {
+          "mean": 0.29512195003742586,
+          "lo": 0.20466185528852138,
+          "hi": 0.39738390678588004,
+          "n": 27
+        },
+        "rouge_l": {
+          "mean": 0.25804647799606373,
+          "lo": 0.172171354273179,
+          "hi": 0.35810667778476724,
+          "n": 27
+        },
+        "answer_entailment": {
+          "mean": 0.21262937739892449,
+          "lo": 0.07818589096824764,
+          "hi": 0.3633933553885542,
+          "n": 27
+        },
+        "abstained": {
+          "mean": 0.037037037037037035,
+          "lo": 0.0,
+          "hi": 0.1111111111111111,
+          "n": 27
+        }
+      },
+      "subset:gold_in_context": {
+        "n": 60,
+        "token_f1": {
+          "mean": 0.3057006846914329,
+          "lo": 0.2445315392847814,
+          "hi": 0.36892497668034036,
+          "n": 60
+        },
+        "rouge_l": {
+          "mean": 0.2599055599056102,
+          "lo": 0.20269055870639566,
+          "hi": 0.3210656400525227,
+          "n": 60
+        },
+        "answer_entailment": {
+          "mean": 0.21502603247875715,
+          "lo": 0.12853293330574161,
+          "hi": 0.3094757674503489,
+          "n": 60
+        },
+        "abstained": {
+          "mean": 0.016666666666666666,
+          "lo": 0.0,
+          "hi": 0.05,
+          "n": 60
+        }
+      }
+    }
+  },
+  "confidence": {
+    "signal": "mean_token_logprob",
+    "auroc_gold_in_context": NaN,
+    "n": 59
+  },
+  "systems": {
+    "model": {
+      "model": "HuggingFaceTB/SmolVLM-500M-Instruct",
+      "device": "mps",
+      "dtype": "float16",
+      "load_in_4bit": false,
+      "params_m": 507.5,
+      "weights_mb": 967.9
+    },
+    "generation_latency_s": {
+      "mean": 1.6404964445164902,
+      "lo": 1.457108347429027,
+      "hi": 1.833319791180356,
+      "n": 60
+    },
+    "input_tokens": {
+      "mean": 979.8166666666667,
+      "lo": 914.6445833333333,
+      "hi": 1043.0029166666666,
+      "n": 60
+    },
+    "output_tokens": {
+      "mean": 50.083333333333336,
+      "lo": 38.132083333333334,
+      "hi": 62.98499999999999,
+      "n": 60
+    },
+    "peak_rss_mb": 2008.3,
+    "mps_allocated_mb": 1095.2,
+    "mps_driver_allocated_mb": 2121.7
+  },
+  "retrieval": "hybrid_text",
+  "corpus": "vidore_v3_computer_science",
+  "seed": 13,
+  "hardware": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "machine": "arm64",
+    "python": "3.12.2",
+    "cpu_count": 11,
+    "ram_gb": 18.0,
+    "torch": "2.13.0",
+    "device": "mps"
+  },
+  "faithfulness_text_source": "parser_markdown"
+}

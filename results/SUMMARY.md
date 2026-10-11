@@ -40,6 +40,50 @@ Paired bootstrap differences in nDCG@10 (candidate minus baseline, same queries)
 | reranking on/off (text hybrid) | `hybrid_text` -> `hybrid_text_rerank` | +0.001 [-0.024, +0.025], p=0.976 | -0.006 [-0.037, +0.026], p=0.681 | +0.009 [-0.030, +0.048], p=0.665 |
 | reranking on/off (multimodal hybrid) | `hybrid_text_colsmol` -> `hybrid_text_colsmol_rerank` | -0.001 [-0.024, +0.022], p=0.913 | -0.005 [-0.038, +0.028], p=0.778 | +0.004 [-0.026, +0.035], p=0.821 |
 
+### Generation: `vidore_v3_computer_science`
+
+Retrieval strategy: `hybrid_text`. Examples per condition: {'answerable': 60, 'missing_evidence': 60, 'out_of_domain': 30}.
+
+Answer quality on answerable questions (abstentions score 0):
+
+| System | Token F1 | ROUGE-L | NLI entailment | Yes/no acc. | F1 visual | F1 text-only | F1 gold in context |
+|---|---|---|---|---|---|---|---|
+| `smolvlm_500m_closed_book` | 0.251 [0.198, 0.305] | 0.203 | 0.099 | 0.000 | 0.257 | 0.243 | n/a |
+| `smolvlm_500m_image_rag` | 0.299 [0.239, 0.364] | 0.248 | 0.211 | 0.500 | 0.259 | 0.349 | 0.313 |
+| `smolvlm_500m_image_rag__oracle` | 0.306 [0.245, 0.369] | 0.260 | 0.215 | 0.667 | 0.314 | 0.295 | 0.306 |
+| `smolvlm_500m_image_text_rag` | 0.290 [0.233, 0.346] | 0.249 | 0.285 | 0.667 | 0.333 | 0.237 | 0.295 |
+| `smolvlm_500m_text_rag` | 0.343 [0.285, 0.406] | 0.290 | 0.249 | 0.667 | 0.331 | 0.359 | 0.354 |
+
+Grounding and abstention:
+
+| System | Faithfulness | Unsupported rate | Citation P | Citation R | Cites a page | Abstain (answerable) | Abstain (evidence withheld) | Abstain (out of domain) | Confidence AUROC |
+|---|---|---|---|---|---|---|---|---|---|
+| `smolvlm_500m_closed_book` | n/a | n/a | n/a | n/a | 0.000 | 0.233 | n/a | 0.367 | n/a |
+| `smolvlm_500m_image_rag` | 0.365 | 0.683 | 0.444 | 0.093 | 0.100 | 0.000 | 0.000 | 0.033 | 0.627 |
+| `smolvlm_500m_image_rag__oracle` | 0.351 | 0.678 | 1.000 | 0.068 | 0.085 | 0.017 | n/a | n/a | n/a |
+| `smolvlm_500m_image_text_rag` | 0.385 | 0.667 | 0.417 | 0.074 | 0.067 | 0.000 | 0.000 | 0.000 | 0.527 |
+| `smolvlm_500m_text_rag` | 0.416 | 0.600 | 0.625 | 0.046 | 0.067 | 0.000 | 0.017 | 0.100 | 0.619 |
+
+Cost:
+
+| System | Model | Params (M) | dtype | Generation s | Input tokens | Output tokens | Peak RSS MB | Accelerator MB |
+|---|---|---|---|---|---|---|---|---|
+| `smolvlm_500m_closed_book` | HuggingFaceTB/SmolVLM-500M-Instruct | 507.5 | float16 | 0.72 | 85 | 73 | 2008 | 2121 |
+| `smolvlm_500m_image_rag` | HuggingFaceTB/SmolVLM-500M-Instruct | 507.5 | float16 | 1.80 | 1132 | 44 | 2008 | 2122 |
+| `smolvlm_500m_image_rag__oracle` | HuggingFaceTB/SmolVLM-500M-Instruct | 507.5 | float16 | 1.64 | 980 | 50 | 2008 | 2122 |
+| `smolvlm_500m_image_text_rag` | HuggingFaceTB/SmolVLM-500M-Instruct | 507.5 | float16 | 2.29 | 2664 | 45 | 2008 | 2122 |
+| `smolvlm_500m_text_rag` | HuggingFaceTB/SmolVLM-500M-Instruct | 507.5 | float16 | 1.43 | 1644 | 62 | 1917 | 2122 |
+
+Paired bootstrap differences in token F1 on answerable questions (candidate minus baseline, same questions):
+
+| Question | Comparison | All | Visual | Text-only |
+|---|---|---|---|---|
+| direct model vs text RAG | `smolvlm_500m_closed_book` -> `smolvlm_500m_text_rag` | +0.093 [+0.032, +0.159], p=0.003 | +0.074 [-0.006, +0.152], p=0.071 | +0.116 [+0.017, +0.222], p=0.019 |
+| direct model vs image RAG | `smolvlm_500m_closed_book` -> `smolvlm_500m_image_rag` | +0.049 [-0.026, +0.124], p=0.201 | +0.002 [-0.099, +0.098], p=0.936 | +0.106 [+0.001, +0.214], p=0.046 |
+| text evidence vs image evidence | `smolvlm_500m_text_rag` -> `smolvlm_500m_image_rag` | -0.044 [-0.111, +0.020], p=0.182 | -0.072 [-0.158, +0.024], p=0.131 | -0.010 [-0.105, +0.075], p=0.873 |
+| adding page images to text evidence | `smolvlm_500m_text_rag` -> `smolvlm_500m_image_text_rag` | -0.054 [-0.127, +0.014], p=0.130 | +0.002 [-0.083, +0.094], p=0.967 | -0.122 [-0.235, -0.018], p=0.018 |
+| retrieved pages vs gold pages (image) | `smolvlm_500m_image_rag` -> `smolvlm_500m_image_rag__oracle` | +0.006 [-0.035, +0.050], p=0.785 | +0.056 [+0.004, +0.114], p=0.038 | -0.054 [-0.122, +0.005], p=0.079 |
+
 ### Hardware
 
 ```json

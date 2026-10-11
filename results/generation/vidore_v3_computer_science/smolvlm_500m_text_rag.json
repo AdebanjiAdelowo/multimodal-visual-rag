@@ -1,0 +1,264 @@
+{
+  "system": "smolvlm_500m_text_rag",
+  "config": {
+    "name": "smolvlm_500m_text_rag",
+    "vlm": {
+      "backend": "transformers",
+      "model": "HuggingFaceTB/SmolVLM-500M-Instruct",
+      "dtype": "auto",
+      "load_in_4bit": false,
+      "max_new_tokens": 160,
+      "device": "auto"
+    },
+    "evidence": {
+      "mode": "text",
+      "max_pages": 3,
+      "image_max_side": 1024,
+      "text_source": "ocr_tesseract",
+      "max_chars_per_page": 2500
+    }
+  },
+  "conditions": {
+    "answerable": {
+      "n": 60,
+      "abstain_rate": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 60
+      },
+      "token_f1": {
+        "mean": 0.343347664320829,
+        "lo": 0.2849424189478133,
+        "hi": 0.4058543377488799,
+        "n": 60
+      },
+      "token_recall": {
+        "mean": 0.36500289072104397,
+        "lo": 0.29822574079536235,
+        "hi": 0.4362358401418817,
+        "n": 60
+      },
+      "rouge_l": {
+        "mean": 0.28998709717255927,
+        "lo": 0.23464218335396564,
+        "hi": 0.34997322563998806,
+        "n": 60
+      },
+      "boolean_accuracy": {
+        "mean": 0.6666666666666666,
+        "lo": 0.3333333333333333,
+        "hi": 1.0,
+        "n": 6
+      },
+      "answer_entailment": {
+        "mean": 0.24898581457382535,
+        "lo": 0.16040097018823873,
+        "hi": 0.34047006987044975,
+        "n": 60
+      },
+      "faithfulness": {
+        "mean": 0.41616389370486995,
+        "lo": 0.3399269121378348,
+        "hi": 0.4965366300487003,
+        "n": 60
+      },
+      "unsupported": {
+        "mean": 0.6,
+        "lo": 0.48333333333333334,
+        "hi": 0.7166666666666667,
+        "n": 60
+      },
+      "citation_precision": {
+        "mean": 0.625,
+        "lo": 0.25,
+        "hi": 1.0,
+        "n": 4
+      },
+      "citation_recall": {
+        "mean": 0.046296296296296294,
+        "lo": 0.0,
+        "hi": 0.1111111111111111,
+        "n": 54
+      },
+      "has_citation": {
+        "mean": 0.06666666666666667,
+        "lo": 0.016666666666666666,
+        "hi": 0.13333333333333333,
+        "n": 60
+      },
+      "invalid_citation": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 60
+      },
+      "gold_in_context": {
+        "mean": 0.9,
+        "lo": 0.8166666666666667,
+        "hi": 0.9666666666666667,
+        "n": 60
+      },
+      "subset:visual": {
+        "n": 33,
+        "token_f1": {
+          "mean": 0.3306128807586514,
+          "lo": 0.2574849446788179,
+          "hi": 0.4049146278498823,
+          "n": 33
+        },
+        "rouge_l": {
+          "mean": 0.2714739310328373,
+          "lo": 0.2061619141785411,
+          "hi": 0.3411887222328771,
+          "n": 33
+        },
+        "answer_entailment": {
+          "mean": 0.3135488610353081,
+          "lo": 0.18413767543024734,
+          "hi": 0.45163928502678924,
+          "n": 33
+        },
+        "abstained": {
+          "mean": 0.0,
+          "lo": 0.0,
+          "hi": 0.0,
+          "n": 33
+        }
+      },
+      "subset:text_only": {
+        "n": 27,
+        "token_f1": {
+          "mean": 0.3589123997857127,
+          "lo": 0.2613200758109756,
+          "hi": 0.4609447187551231,
+          "n": 27
+        },
+        "rouge_l": {
+          "mean": 0.3126143002322195,
+          "lo": 0.22137181342178658,
+          "hi": 0.41105107294181903,
+          "n": 27
+        },
+        "answer_entailment": {
+          "mean": 0.1700754244542353,
+          "lo": 0.059242061757821055,
+          "hi": 0.30863404952712387,
+          "n": 27
+        },
+        "abstained": {
+          "mean": 0.0,
+          "lo": 0.0,
+          "hi": 0.0,
+          "n": 27
+        }
+      },
+      "subset:gold_in_context": {
+        "n": 54,
+        "token_f1": {
+          "mean": 0.35354149781113403,
+          "lo": 0.28589645233961836,
+          "hi": 0.41802968815193753,
+          "n": 54
+        },
+        "rouge_l": {
+          "mean": 0.2977104366799672,
+          "lo": 0.23673399134989984,
+          "hi": 0.3575716782911233,
+          "n": 54
+        },
+        "answer_entailment": {
+          "mean": 0.2542152450133236,
+          "lo": 0.1633864751501581,
+          "hi": 0.36010548525139,
+          "n": 54
+        },
+        "abstained": {
+          "mean": 0.0,
+          "lo": 0.0,
+          "hi": 0.0,
+          "n": 54
+        }
+      }
+    },
+    "missing_evidence": {
+      "n": 60,
+      "abstain_rate": {
+        "mean": 0.016666666666666666,
+        "lo": 0.0,
+        "hi": 0.05,
+        "n": 60
+      },
+      "unsupported_answer_rate": {
+        "mean": 0.9833333333333333,
+        "lo": 0.95,
+        "hi": 1.0,
+        "n": 60
+      }
+    },
+    "out_of_domain": {
+      "n": 30,
+      "abstain_rate": {
+        "mean": 0.1,
+        "lo": 0.0,
+        "hi": 0.2,
+        "n": 30
+      },
+      "unsupported_answer_rate": {
+        "mean": 0.9,
+        "lo": 0.8,
+        "hi": 1.0,
+        "n": 30
+      }
+    }
+  },
+  "confidence": {
+    "signal": "mean_token_logprob",
+    "auroc_gold_in_context": 0.6185185185185185,
+    "n": 119
+  },
+  "systems": {
+    "model": {
+      "model": "HuggingFaceTB/SmolVLM-500M-Instruct",
+      "device": "mps",
+      "dtype": "float16",
+      "load_in_4bit": false,
+      "params_m": 507.5,
+      "weights_mb": 967.9
+    },
+    "generation_latency_s": {
+      "mean": 1.4315303377998863,
+      "lo": 1.2377425164951037,
+      "hi": 1.64348040694157,
+      "n": 150
+    },
+    "input_tokens": {
+      "mean": 1643.5866666666666,
+      "lo": 1612.9421666666667,
+      "hi": 1673.0923333333333,
+      "n": 150
+    },
+    "output_tokens": {
+      "mean": 62.166666666666664,
+      "lo": 53.05233333333334,
+      "hi": 72.14716666666666,
+      "n": 150
+    },
+    "peak_rss_mb": 1916.9,
+    "mps_allocated_mb": 1095.2,
+    "mps_driver_allocated_mb": 2121.7
+  },
+  "retrieval": "hybrid_text",
+  "corpus": "vidore_v3_computer_science",
+  "seed": 13,
+  "hardware": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "machine": "arm64",
+    "python": "3.12.2",
+    "cpu_count": 11,
+    "ram_gb": 18.0,
+    "torch": "2.13.0",
+    "device": "mps"
+  },
+  "faithfulness_text_source": "parser_markdown"
+}
