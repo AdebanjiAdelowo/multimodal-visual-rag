@@ -32,6 +32,16 @@ COMPARISONS = [
 ]
 
 
+# (baseline mode, candidate mode, question), compared within one generator.
+GENERATION_COMPARISONS = [
+    ("closed_book", "text_rag", "direct model vs text RAG"),
+    ("closed_book", "image_rag", "direct model vs image RAG"),
+    ("text_rag", "image_rag", "text evidence vs image evidence"),
+    ("text_rag", "image_text_rag", "adding page images to text evidence"),
+    ("image_rag", "image_rag__oracle", "retrieved pages vs gold pages (image)"),
+]
+
+
 def _fmt(ci: dict[str, Any] | None, digits: int = 3, with_ci: bool = False) -> str:
     if not ci or ci.get("n", 0) == 0 or math.isnan(ci["mean"]):
         return "n/a"
@@ -105,6 +115,27 @@ def retrieval_section(corpus_dir: Path, runs_dir: Path) -> str:
         )  # fmt: skip
     )
 
+    origins = sorted({k for s in summaries for k in s["metrics"] if k.startswith("origin:")})
+    if origins:
+        out += [
+            "",
+            "nDCG@10 by how the query was written (number of queries in brackets):",
+            "",
+            _table(
+                ["Strategy"]
+                + [
+                    f"{o.split(':', 1)[1]} ({first['metrics'].get(o, {}).get('n_queries', 0)})"
+                    for o in origins
+                ],
+                [
+                    [f"`{s['strategy']}`"]
+                    + [_fmt(s["metrics"].get(o, {}).get("ndcg@10"), with_ci=True) for o in origins]
+                    for s in summaries
+                    if any(o in s["metrics"] for o in origins)
+                ],
+            ),
+        ]
+
     comp_rows = []
     for base, cand, label in COMPARISONS:
         pa, pb = runs_dir / f"{base}.jsonl", runs_dir / f"{cand}.jsonl"
@@ -131,12 +162,52 @@ def retrieval_section(corpus_dir: Path, runs_dir: Path) -> str:
     return "\n".join(out)
 
 
-def generation_section(corpus_dir: Path) -> str:
+def _load_scored(path: Path) -> dict[str, dict]:
+    """Answerable-condition records of a scored generation run, keyed by query."""
+    out = {}
+    for line in path.read_text().splitlines():
+        if line.strip():
+            r = json.loads(line)
+            if r["condition"] == "answerable":
+                out[r["query_id"]] = r
+    return out
+
+
+def generation_comparisons(systems: list[str], runs_dir: Path) -> list[list[str]]:
+    """Paired bootstrap of token F1 between evidence modes of the same generator."""
+    rows = []
+    for base_mode, cand_mode, label in GENERATION_COMPARISONS:
+        for base in systems:
+            if not base.endswith(f"_{base_mode}"):
+                continue
+            cand = base[: -len(base_mode)] + cand_mode
+            pa, pb = runs_dir / f"{base}.scored.jsonl", runs_dir / f"{cand}.scored.jsonl"
+            if cand not in systems or not (pa.exists() and pb.exists()):
+                continue
+            ra, rb = _load_scored(pa), _load_scored(pb)
+            ids = sorted(set(ra) & set(rb))
+            row = [label, f"`{base}` -> `{cand}`"]
+            for keep in (
+                ids,
+                [i for i in ids if ra[i]["is_visual"]],
+                [i for i in ids if not ra[i]["is_visual"]],
+            ):
+                d = paired_bootstrap(
+                    [ra[i]["metrics"]["token_f1"] for i in keep],
+                    [rb[i]["metrics"]["token_f1"] for i in keep],
+                )
+                row.append(f"{d['diff']:+.3f} [{d['lo']:+.3f}, {d['hi']:+.3f}], p={d['p']:.3f}")
+            rows.append(row)
+    return rows
+
+
+def generation_section(corpus_dir: Path, runs_dir: Path | None = None) -> str:
     summaries = [json.loads(p.read_text()) for p in sorted(corpus_dir.glob("*.json"))]
     if not summaries:
         return ""
     out = [f"### Generation: `{corpus_dir.name}`", ""]
-    s0 = summaries[0]
+    # Closed-book systems have no evidence-withheld condition; describe the fullest design.
+    s0 = max(summaries, key=lambda s: len(s["conditions"]))
     n = {k: v["n"] for k, v in s0["conditions"].items()}
     out += [f"Retrieval strategy: `{s0.get('retrieval')}`. Examples per condition: {n}.", ""]
     quality, behaviour, systems = [], [], []
@@ -185,6 +256,15 @@ def generation_section(corpus_dir: Path) -> str:
         _table(["System", "Model", "Params (M)", "dtype", "Generation s", "Input tokens",
                 "Output tokens", "Peak RSS MB", "Accelerator MB"], systems),
     ]  # fmt: skip
+    comp = generation_comparisons([s["system"] for s in summaries], runs_dir) if runs_dir else []
+    if comp:
+        out += [
+            "",
+            "Paired bootstrap differences in token F1 on answerable questions "
+            "(candidate minus baseline, same questions):",
+            "",
+            _table(["Question", "Comparison", "All", "Visual", "Text-only"], comp),
+        ]
     return "\n".join(out)
 
 
@@ -204,7 +284,7 @@ def build_report(results: Path, runs: Path) -> str:
             section = (
                 retrieval_section(d, runs / "retrieval" / d.name)
                 if kind == "retrieval"
-                else generation_section(d)
+                else generation_section(d, runs / "generation" / d.name)
             )
             if not section:
                 continue

@@ -84,6 +84,8 @@ def test_evaluate_retrieval_on_toy_corpus(corpus):
     assert m["all"]["recall@1"]["mean"] == 1.0
     assert m["visual"]["n_queries"] == 1 and m["text_only"]["n_queries"] == 1
     assert "type:chart" in m
+    # Query origin is a stratum only where the dataset records it.
+    assert m["origin:human"]["n_queries"] == 1 and "origin:None" not in m
 
 
 def test_shipped_configs_parse():

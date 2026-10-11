@@ -18,6 +18,10 @@ def strata(q: Query) -> list[str]:
     """Subsets a query belongs to. 'visual' = any gold evidence is non-textual."""
     tags = ["all", "visual" if q.is_visual else "text_only"]
     tags += [f"type:{c.lower()}" for c in q.content_types if c.lower() in VISUAL_CONTENT_TYPES]
+    # How the query was written (ViDoRe v3: "human" or "sdg", a synthetic pipeline).
+    # Synthetic queries may share wording with the page text they were generated from.
+    if q.meta.get("query_generator"):
+        tags.append(f"origin:{q.meta['query_generator']}")
     return tags
 
 

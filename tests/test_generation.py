@@ -78,3 +78,26 @@ def test_generation_eval_conditions_and_resume(corpus, tmp_path):
     assert ans["gold_in_context"]["mean"] == 1.0 and ans["citation_precision"]["mean"] == 1.0
     # The mock always answers from whatever it is given, so it never abstains.
     assert summary["conditions"]["missing_evidence"]["unsupported_answer_rate"]["mean"] == 1.0
+
+
+def test_report_compares_evidence_modes_of_one_generator(corpus, tmp_path):
+    import json
+
+    from mmrag.eval.report import generation_section
+
+    pipe = bm25_pipeline(corpus)
+    examples = build_examples(pipe, corpus.load_queries(), corpus.load_qrels(), [], depth=3)
+    res, runs = tmp_path / "results", tmp_path / "runs"
+    res.mkdir()
+    runs.mkdir()
+    for mode in ("closed_book", "text"):
+        system = f"mock_{mode}" if mode == "closed_book" else "mock_text_rag"
+        rag = RAGPipeline(corpus, MockVLM(), gen_cfg(mode))
+        exs = [e for e in examples if mode == "text" or e.condition == "answerable"]
+        recs = score_records(run_system(rag, system, exs, runs / f"{system}.jsonl"), None, {})
+        (res / f"{system}.json").write_text(json.dumps(summarize(recs, rag, system)))
+        (runs / f"{system}.scored.jsonl").write_text("\n".join(json.dumps(r) for r in recs))
+    md = generation_section(res, runs)
+    assert "`mock_closed_book` -> `mock_text_rag`" in md and "direct model vs text RAG" in md
+    assert "'missing_evidence': 2" in md  # header describes the fullest design
+    assert "image RAG" not in md  # comparisons need both systems to exist
