@@ -11,10 +11,12 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      # setup-uv publishes no floating major tag, so pin the exact release.
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           python-version: ${{ matrix.python-version }}
+          activate-environment: true
       # The test suite needs no neural models, network access or GPU.
       - name: Install
         run: uv pip install -e ".[app,dev]"
@@ -30,7 +32,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build image
         run: docker build -t mmrag:ci .
       - name: Smoke test API
