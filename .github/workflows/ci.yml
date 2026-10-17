@@ -17,7 +17,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       # The test suite needs no neural models, network access or GPU.
       - name: Install
-        run: uv pip install --system -e ".[app,dev]"
+        run: uv pip install -e ".[app,dev]"
       - name: Lint
         run: |
           ruff check src tests app kaggle
