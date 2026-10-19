@@ -1,6 +1,6 @@
 # Implementation status and handoff
 
-Last updated: 2026-10-11 (session 3). Branch `main`, no remote, nothing pushed.
+Last updated: 2026-10-19. Branch `main`, tracking the private remote `origin` (github.com/AdebanjiAdelowo/multimodal-visual-rag); last pushed commit `63eaadd`.
 
 This file is the entry point for resuming work. GPU experiments run on Kaggle; their state is in [KAGGLE_HANDOFF.md](KAGGLE_HANDOFF.md), which is the first thing to read when resuming. Per-experiment status and commands are in [experiments.md](experiments.md); measured numbers are in [../results/SUMMARY.md](../results/SUMMARY.md), which is generated from the JSON files in `results/` and never edited by hand.
 
@@ -25,8 +25,8 @@ Statuses: COMPLETE AND VERIFIED, IMPLEMENTED BUT NOT VERIFIED, PARTIALLY IMPLEME
 | Ablation experiments | PARTIALLY COMPLETE | retrieval ablations done; generation ablations (pages, resolution, text budget, model size) PENDING GPU | Kaggle stage `ablations` |
 | FastAPI | COMPLETE AND VERIFIED | `tests/test_api.py`, manual endpoint check in session 2 | none |
 | Streamlit | IMPLEMENTED BUT NOT VERIFIED | loaded headless with AppTest in session 2; no test in the suite | optional AppTest-based test |
-| Docker | IMPLEMENTED BUT NOT VERIFIED | image never built | `docker build -t mmrag .`, then `curl localhost:8000/health` |
-| CI | IMPLEMENTED BUT NOT VERIFIED | workflow never executed (no remote) | runs on first push, which needs the owner's approval |
+| Docker | COMPLETE AND VERIFIED in CI | CI run 39056801094: image built, `/health` returned `status: ok` (mock generator); never built locally | none |
+| CI | COMPLETE AND VERIFIED | run 39056801094 on `63eaadd`: Ruff lint and format, 45 tests on Python 3.11 and 3.12, Docker job all passed | none |
 | Kaggle runner | IMPLEMENTED; dry-run tested; first submission recorded in KAGGLE_HANDOFF.md | `tests/test_kaggle_runner.py` runs the whole control flow with stubbed commands | import results when the job finishes |
 | README/documentation | COMPLETE for all local results | README, architecture, datasets, evaluation, research audit, experiments | add GPU findings after import |
 
@@ -88,3 +88,11 @@ submission is authorized by this work. Colab execution remains unverified.
 Colab browser attempt: notebook uploaded; T4 requested; diagnostic cell remained
 queued at runtime allocation. No remote GPU measurements. Local checks: 45 tests
 and Ruff pass. The exact notebook link and checksummed bundle are in COLAB_HANDOFF.md.
+
+Colab status check (2026-10-19): smoke test BLOCKED, not run. No signed-in browser
+was available to the agent and the Drive mount needs the owner's authorization. The
+bundle checksum and the pinned 2B revision were re-verified, and the feasibility table
+was revised with Hub-measured download sizes. Two gaps were found: generation configs do
+not pin model revisions, and the notebook omits `--extra quant` for 8B NF4. Recommended
+first experiment: Qwen3-VL-2B generation, prepared only after a passing smoke test.
+See the 2026-10-19 section of COLAB_HANDOFF.md.

@@ -80,3 +80,78 @@ Local validation: 45 tests passed; Ruff lint and format checks passed; notebook
 code parsed with Python AST; archived source checksum and exclusions verified;
 no model weights or credential files tracked. Existing `results/` unchanged.
 An additional mocked no-CUDA check verified failure reporting without model loading.
+
+## Status check, 2026-10-19: BLOCKED (no runtime reachable)
+
+Smoke test **not run**. The agent session had no browser signed in to Google,
+and the Drive mount needs the owner's own authorization, so no Colab runtime was
+reachable. No GPU type, VRAM, latency, load time or peak memory has been measured.
+No Colab outputs exist: `colab_outputs/` holds only the source bundle.
+
+Re-verified locally on 2026-10-19:
+- Bundle SHA-256 still matches `manifest.json` (`4b208806…c969402`, commit `6968e5f`).
+  Commits since `6968e5f` change only docs and `.github/workflows/ci.yml`, so the
+  bundled code equals HEAD and the bundle does not need rebuilding.
+- `Qwen/Qwen3-VL-2B-Instruct@89644892e4d85e24eaac8bacfd4f463576704203` exists on
+  the Hub and is the current `main` tip; weights 4.26 GB (Hub metadata), Apache-2.0.
+
+### Values to paste into the source cell
+
+```python
+SOURCE_COMMIT = "6968e5fa3f6cee4b93f49a5eaf5d07e3607fd707"
+EXPECTED_SHA256 = "4b208806a5b75e54b7d8029b771170857c3646dad16157374cc27d309c969402"
+```
+
+Upload `colab_outputs/source/mmrag-6968e5fa3f6cee4b93f49a5eaf5d07e3607fd707.zip`.
+
+### Manual run (owner)
+
+1. Open https://colab.research.google.com/drive/1R6Bq_A5vZVbA9jkZThca0Q7xVdLfGdYi
+   and set **Runtime → Change runtime type → T4 GPU** (free tier; no purchase).
+2. Run cells 1–5 in order. Approve Drive access in cell 2 yourself. Paste the two
+   values above into cell 3. The free-VRAM guard needs 8 GiB, which a T4 has.
+3. Cell 5 passes only if `exit status: 0` and `report['status'] == 'passed'`.
+4. Download `MyDrive/mmrag/colab_outputs/smoke_test/` (newest run directory,
+   `source_provenance.json`, `console.log`) to `colab_outputs/smoke_test/` locally.
+   Keep failure reports as they are. Do not run anything beyond cell 5.
+
+The report records the GPU name, total/free VRAM, CUDA, torch and transformers
+versions, load latency, per-example latency and peak allocated/reserved memory.
+
+### Feasibility, revised 2026-10-19
+
+Downloads are **measured from Hub metadata** (safetensors totals, current `main`).
+VRAM and runtime are **estimates** carried over from the table above. None of them
+are Colab measurements. Resume support was checked in code, not run on Colab.
+
+| Workload | Model (Hub `main` sha) | Download | VRAM (est.) | T4 time (est.) | Resume | Independent | Free T4 (15 GB) |
+|---|---|---|---|---|---|---|---|
+| CLIP retrieval | `openai/clip-vit-base-patch32` (`3d74acf`) | ~0.6 GB PyTorch weights; repo has no safetensors (1.8 GB incl. TF/Flax) | 1–2 GB | 5–15 min | full-index cache | yes, `visual_clip.yaml` | yes; also feasible on the Mac, does not need a GPU slot |
+| ColQwen2 retrieval | `vidore/colqwen2-base` (`9fe8a71`) + `vidore/colqwen2-v1.0` adapter (`2b6ac8f`) | 8.84 + 0.07 GB | 6–12 GB | 20–60 min | per-batch index resume (`index/late.py`) | yes, `late_colqwen2.yaml` | plausible |
+| Caption retrieval | SmolVLM-500M (`a7da5b9`), then Qwen3-VL-4B (`ebb281e`) | 1.02 GB; 8.88 GB | 2–4 / 10–15 GB | 2–4 h | per-page caption JSONL | captions first, then retrieval | yes for SmolVLM; 4B tight |
+| Qwen3-VL-2B generation | `89644892` (pinned) | 4.26 GB | 6–10 GB | 0.5–2 h | per-key JSONL (`generation_eval.run_system`) | yes, per-model CLI | plausible; smoke test measures it |
+| Qwen3-VL-4B generation | `ebb281e` | 8.88 GB | 11–16+ GB | 1–3 h | per-key JSONL | yes | uncertain with three 1024-px pages |
+| Qwen3-VL-8B NF4 | `0c351dd` | 17.53 GB before quantization | 7–14+ GB | 2–4 h | per-key JSONL | yes, `generation_8b` | uncertain; also needs `--extra quant` (not installed by the notebook) and ~18 GB of free disk on the runtime |
+| Generation ablations (4B) | `ebb281e` | 8.88 GB (shared) | 12–20+ GB | 2–4 h | per-run JSONL | yes, separate commands | five pages / 1536 px likely exceeds a T4 |
+
+Gaps to close before the first benchmark experiment, found 2026-10-19:
+- Generation configs do not pin `vlm.revision`; only the smoke test does. Pin it
+  in any Colab experiment config so the model revision is reproducible.
+- All benchmark workloads need the materialized corpus with OCR text on persistent
+  storage. Either rebuild it on Colab (`mmrag fetch-vidore`, 512 MB, then Tesseract
+  OCR, which may not reproduce the local fingerprint), or copy the existing
+  `data/processed/vidore_v3_computer_science` (389 MB, CC-BY-4.0) to Drive and
+  verify its corpus fingerprint. Copying is preferred: the paired comparison with
+  the completed SmolVLM-500M run then uses identical inputs.
+
+### Recommended first GPU experiment (not prepared; gated on a passing smoke test)
+
+Qwen3-VL-2B generation over the same 60 questions × 4 evidence conditions
+(closed book, text, image, image + text) as the completed SmolVLM-500M run,
+with the model pinned to `89644892`. It is the cheapest workload that answers a
+pending research question: it directly measures the effect of model scale against
+an existing result and checks whether citation verification becomes informative.
+The model is the same one the smoke test loads. CLIP is cheaper, but it is a weak
+baseline that fits on the Mac and does not need Colab. The runner, persistent
+output layout, checkpointing and checksums will be prepared only after the smoke
+test passes and its measured VRAM is known.
