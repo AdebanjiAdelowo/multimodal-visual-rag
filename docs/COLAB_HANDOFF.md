@@ -192,3 +192,32 @@ Retry: build a new bundle from the commit that contains this fix
 (`python3 scripts/build_colab_bundle.py`), then rerun cells 3–5 with the new commit
 and checksum from `colab_outputs/source/manifest.json`. Cell 3 extracts into a
 directory named after the commit, so the retry does not collide with attempt 1.
+
+## Attempt 2, 2026-10-20: PASSED
+
+Run directory: `MyDrive/mmrag/colab_outputs/smoke_test/20261020T092130-ef026d98/`,
+copied to the local `colab_outputs/smoke_test/20261020T092130-ef026d98/` (gitignored).
+Source `4e27669` (bundle SHA-256 `2a686904…9da0c5`, verified by the notebook).
+Verified locally on 2026-10-20: `report.sha256` matches `report.json`; both example
+files match the SHA-256 and payload recorded in the report; status, model loading
+and inference are all `passed` with no errors. `source_provenance.json` and
+`console.log` were not downloaded; they remain in Drive.
+
+Measured on Colab (single run; not a benchmark):
+
+| Item | Value |
+|---|---|
+| GPU / VRAM total / free at start | Tesla T4 / 14.56 GiB / 14.46 GiB |
+| Python / CUDA / torch / transformers | 3.12.3 / 13.0 / 2.13.0 / 5.19.0 |
+| Model | `Qwen/Qwen3-VL-2B-Instruct@89644892…`, float16, no quantization |
+| Load time | 65.0 s (likely includes the first weight download; cold start) |
+| Example 0 (red square) | answer `red`, 3.22 s, 275 input / 2 output tokens (first call, includes warm-up) |
+| Example 1 (blue square) | answer `blue`, 0.22 s, 275 input / 2 output tokens |
+| Peak allocated / reserved | 4.04 GiB / 4.07 GiB (4,340,698,624 / 4,370,464,768 B) |
+
+What this establishes: the locked environment installs on Colab, CUDA works, the
+pinned 2B model loads through the production `TransformersVLM` backend, and the
+Drive output and checksum path works. What it does not establish: answer quality,
+or memory and latency at benchmark settings. The 4.04 GiB peak covers 275 input
+tokens at 512 px. Three 1024-px pages produce far more visual tokens, so the
+6–10 GB estimate for 2B generation stays an estimate until measured.

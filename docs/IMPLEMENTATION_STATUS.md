@@ -101,3 +101,8 @@ Colab attempt 1 (2026-10-20): FAILED at model loading on a Tesla T4 (14.56 GiB),
 because `torchvision` was missing from the `models` extra. It is now declared there;
 the processor load was verified locally with a models-only package set. Retry with a
 new bundle. Details are in COLAB_HANDOFF.md.
+
+Colab attempt 2 (2026-10-20): smoke test PASSED on a Tesla T4 (source `4e27669`).
+Qwen3-VL-2B float16 loaded in 65.0 s; both synthetic answers were correct; peak
+memory was 4.04 GiB allocated. Checksums were verified locally. Next: prepare the
+Qwen3-VL-2B generation experiment (not launched). Details are in COLAB_HANDOFF.md.
