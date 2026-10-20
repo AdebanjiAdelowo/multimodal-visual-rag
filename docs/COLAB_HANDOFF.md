@@ -327,3 +327,12 @@ PYTHONPATH=src .venv/bin/python -m mmrag.colab_generation score \
 This checks the run checksums and the corpus fingerprint, scores on CPU, and writes
 `results/generation/vidore_v3_computer_science/qwen3vl_2b_*.json` plus scored JSONL under
 `artifacts/runs/generation/`. It refuses to overwrite any existing file; SmolVLM files are untouched.
+
+### Source bundle for this experiment
+
+Built from `d40a96f` (the commit that adds the runner; later commits change docs only):
+- `colab_outputs/source/mmrag-d40a96ffa7d4403e22422d997a6637cd04328348.zip` (977,795 bytes uncompressed, 164 files)
+- `SOURCE_COMMIT = "d40a96ffa7d4403e22422d997a6637cd04328348"`
+- `SOURCE_SHA256 = "11278e2a611742472dd1ae9f5642534f94ae8ecebd2b9f88622c90c19a30eb5c"`
+
+The output directory is bound to this commit. Resume only with the same bundle.
