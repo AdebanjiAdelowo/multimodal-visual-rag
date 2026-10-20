@@ -1,4 +1,6 @@
 # Direct VLM without retrieval: the model answers from parametric knowledge only.
 name: qwen3vl_2b_closed_book
-vlm: {model: Qwen/Qwen3-VL-2B-Instruct}
+# Pinned to the revision smoke-tested on a Colab T4 (2026-10-20). float16 and 160 new
+# tokens are the values SmolVLM-500M resolved to; decoding is greedy in the backend.
+vlm: {model: Qwen/Qwen3-VL-2B-Instruct, revision: 89644892e4d85e24eaac8bacfd4f463576704203, dtype: float16, max_new_tokens: 160, device: cuda}
 evidence: {mode: closed_book}

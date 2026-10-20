@@ -221,3 +221,109 @@ Drive output and checksum path works. What it does not establish: answer quality
 or memory and latency at benchmark settings. The 4.04 GiB peak covers 275 input
 tokens at 512 px. Three 1024-px pages produce far more visual tokens, so the
 6–10 GB estimate for 2B generation stays an estimate until measured.
+
+## Qwen3-VL-2B generation experiment: prepared 2026-10-20, NOT RUN
+
+Runner `src/mmrag/colab_generation.py`, notebook `notebooks/colab_qwen3vl_2b_generation.ipynb`,
+tests `tests/test_colab_generation.py`. Neither the memory check nor the full run has been
+executed. Both notebook stages stop unless the owner sets their approval flag to `True`.
+
+### Design: what is held fixed against SmolVLM-500M
+
+| Element | How it is controlled |
+|---|---|
+| Questions | Re-sampled on Colab with the CLI's `sample_queries` (60, seed 13) and the out-of-domain sample (30, seed 13), then required to equal the frozen key list in order. Verified locally: identical IDs, order, questions, reference answers and gold pages. |
+| Conditions | answerable, missing_evidence (gold pages withheld), out_of_domain; closed book skips missing_evidence, as in `mmrag eval-generation`. 540 generations: 90 + 150 + 150 + 150. |
+| Evidence | Not re-retrieved. The three pages each SmolVLM system saw (identical across its text, image and image + text runs for all 150 keys) are frozen into `smolvlm_500m_evidence.jsonl` (SHA-256 `59e776c0…f707280`) and passed unchanged. Retrieval scores are not used by evidence selection or the prompt. |
+| Evidence settings | `max_pages` 3, `image_max_side` 1024, `ocr_tesseract` text, 2,500 characters per page. The runner refuses to start if any Qwen config differs from the SmolVLM config. |
+| Generation | Greedy decoding (backend), 160 new tokens, float16; model pinned to `89644892`. |
+| Scoring | `mmrag.colab_generation score`, run locally: the same `score_records` and `summarize` code, `nli-deberta-v3-xsmall` on CPU, `parser_markdown` for faithfulness, as for SmolVLM. |
+
+Differences that a strictly controlled comparison cannot remove:
+- **Hardware and kernels:** SmolVLM ran on Apple MPS, Qwen runs on a CUDA T4; both float16. Latency and memory are not comparable across the two.
+- **Model-specific inputs:** the same 1024-px images and prompt text go in, but SmolVLM tiles images into 512-px crops while Qwen3-VL uses native-resolution patches. Chat templates also differ. Both are properties of the models being compared.
+- **SmolVLM revision:** not pinned when it ran (2026-10-11). The only cached snapshot is `a7da5b9…`, which is still the Hub `main`, so it is very likely, but not provably, the revision used.
+- **Software:** Python 3.12.3 on Colab vs 3.12.2 locally; torch 2.13.0 on both. The SmolVLM result files do not record the transformers version (local is now 5.19.0, as on Colab).
+- **Out of scope:** the SmolVLM `image_rag__oracle` variant (gold pages) is not part of this four-system run.
+
+### Output and recovery
+
+`MyDrive/mmrag/colab_outputs/qwen3vl_2b_generation/`:
+- `provenance.json`: written once. It holds the experiment description and its SHA-256 (configs, model revision, seed, corpus manifest, evidence). A later session with a different configuration or source commit is refused.
+- `sessions.jsonl`: one start and one end line per session, with packages, GPU, hardware and status.
+- `runs/qwen3vl_2b_<system>.jsonl`: one answer per line, appended and flushed as generated (`generation_eval.run_system`).
+- `runs/*.calls.jsonl`: per-call latency, tokens and peak allocated/reserved VRAM.
+- `runs/*.complete.json`: written when a system finishes; holds the run file's SHA-256 and the peak VRAM over all its calls. A run file that changes after completion is refused.
+- `CHECKSUMS.sha256`: rewritten at the end of every session, including interrupted ones.
+
+After a disconnect: reconnect, rerun cells 1–6, then rerun the interrupted stage. Completed
+answers are skipped. A half-written last line is moved to `runs/<name>.partial-<time>` and
+regenerated. Drive writes are asynchronous, so the last few answers before a hard disconnect
+may be lost and regenerated; they are never duplicated, because keys are checked.
+Writing into the repository's `results/` is refused; results are imported only by `score`.
+
+### Corpus transfer (owner action; nothing has been uploaded)
+
+Local source: `~/Documents/GitHub/multimodal-visual-rag/data/processed/vidore_v3_computer_science/`
+(ViDoRe v3 computer science, revision `d5cc758…`, CC-BY-4.0; 1,360 pages).
+Already packaged by `python -m mmrag.colab_generation package-corpus` (byte-reproducible):
+
+| Item | Value |
+|---|---|
+| Archive | `colab_outputs/corpus/mmrag_corpus-vidore_v3_computer_science-ed29ca4d367565dd.tar` |
+| Size | 404,029,440 bytes (385.3 MiB), uncompressed tar (JPEG pages do not compress) |
+| SHA-256 | `aedb0646e075d22514e526e89ad6cf49c88bbde56217934657130827f7cb9c9c` |
+| Contents | corpus (1,368 files), frozen evidence, `MANIFEST.json` with a SHA-256 per file |
+| Manifest SHA-256 / corpus fingerprint | `9beaeff5…bef02693` / `ed29ca4d367565dd` |
+
+1. Check locally: `shasum -a 256 colab_outputs/corpus/mmrag_corpus-vidore_v3_computer_science-ed29ca4d367565dd.tar`
+2. In drive.google.com, create `My Drive/mmrag/corpus/` and upload the `.tar` there unchanged
+   (do not unzip or convert it). Create `My Drive/mmrag/source/` and upload the source ZIP there.
+3. Notebook cell 5 copies the tar to `/content`, checks the SHA-256, extracts it with
+   `tarfile` `filter='data'` (rejects absolute paths, links and traversal), then runs
+   `verify-corpus`, which checks every file, the file set and the corpus fingerprint.
+   `run` and `memory-check` verify the corpus again before using it.
+
+Verified locally: two builds gave the same SHA-256; a safe extraction verified all 1,369 files
+and rebuilt the 540 examples.
+
+### Memory validation procedure (prepared, not executed)
+
+Notebook cell 8, gated by `APPROVE_MEMORY_CHECK`. It runs `memory-check`, which:
+- uses the real configs and the actual prompt path (`RAGPipeline.answer` with frozen evidence);
+- picks the five heaviest `image_text_rag` prompts (three pages, the most OCR text; every
+  evidence page is 1236×1600, so 791×1024 after resizing), plus the heaviest `image_rag` and
+  `text_rag` prompt;
+- records per prompt the image sizes after resizing, evidence characters, input/output tokens,
+  `max_new_tokens`, latency, and peak allocated/reserved VRAM (reset before each prompt);
+- passes only if peak reserved VRAM is below 80% of the GPU total (11.6 GiB on a T4). The first
+  prompt's latency includes CUDA warm-up;
+- writes `qwen3vl_2b_memory_check/memory_check/<time>/report.json` and `.sha256`, and records
+  the planned prompts first, so an out-of-memory failure still shows which prompt it hit.
+  It never writes experiment run files.
+
+### Estimated Colab requirements (estimates, not measurements)
+
+| Resource | Estimate | Basis |
+|---|---|---|
+| Peak VRAM, full run | 5–8 GiB | 4.04 GiB measured for weights plus one 275-token prompt; the heaviest prompt is about 4–5k tokens (three 791×1024 pages plus up to 7,500 characters). Unverified until the memory check runs. |
+| Generation time | 0.5–1.5 h for 540 prompts | assumes 2–6 s per prompt on a T4 (SmolVLM-500M averaged 1.8 s on MPS) |
+| Per-session setup | 5–10 min | uv install, 4.3 GB model download (65 s load measured), 385 MiB corpus copy and verification |
+| Colab disk | ~11 GB | venv, model cache, tar and extracted corpus |
+| Drive | ~0.4 GB | tar, source ZIP, outputs of a few MB |
+
+The run fits one free-tier session if the estimates hold. If not, it resumes across sessions.
+
+### After the run (local)
+
+Download `qwen3vl_2b_generation/` to `colab_outputs/qwen3vl_2b_generation/`, then:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m mmrag.colab_generation score \
+  --output colab_outputs/qwen3vl_2b_generation \
+  --corpus data/processed/vidore_v3_computer_science
+```
+
+This checks the run checksums and the corpus fingerprint, scores on CPU, and writes
+`results/generation/vidore_v3_computer_science/qwen3vl_2b_*.json` plus scored JSONL under
+`artifacts/runs/generation/`. It refuses to overwrite any existing file; SmolVLM files are untouched.

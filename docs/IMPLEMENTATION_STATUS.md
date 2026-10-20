@@ -106,3 +106,10 @@ Colab attempt 2 (2026-10-20): smoke test PASSED on a Tesla T4 (source `4e27669`)
 Qwen3-VL-2B float16 loaded in 65.0 s; both synthetic answers were correct; peak
 memory was 4.04 GiB allocated. Checksums were verified locally. Next: prepare the
 Qwen3-VL-2B generation experiment (not launched). Details are in COLAB_HANDOFF.md.
+
+Qwen3-VL-2B experiment preparation (2026-10-20): IMPLEMENTED, NOT RUN. Resumable Colab runner
+(`src/mmrag/colab_generation.py`), gated notebook, 13 offline tests. The 2B configs are pinned to
+`89644892`. Evidence is frozen from the SmolVLM-500M runs, and the 60/60/30 question set is
+verified identical. The corpus archive (385 MiB, SHA-256 `aedb0646…`) is built locally but not
+uploaded. Next: the owner uploads the corpus and source to Drive, then approves the memory check.
+See COLAB_HANDOFF.md.
