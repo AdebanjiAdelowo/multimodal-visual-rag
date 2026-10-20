@@ -155,3 +155,40 @@ The model is the same one the smoke test loads. CLIP is cheaper, but it is a wea
 baseline that fits on the Mac and does not need Colab. The runner, persistent
 output layout, checkpointing and checksums will be prepared only after the smoke
 test passes and its measured VRAM is known.
+
+## Attempt 1, 2026-10-20: FAILED at model loading (missing torchvision)
+
+Run directory: `MyDrive/mmrag/colab_outputs/smoke_test/20261020T091149-3eb680a4/`
+(source `6968e5f`, bundle SHA-256 verified by the notebook). Report and checksum
+read back successfully in cell 5; `status: failed`, `model_loading: failed`,
+`inference: not_started`. Keep this directory; it is the evidence for this entry.
+
+Measured by the runner (from `report.json`):
+
+| Item | Value |
+|---|---|
+| GPU | Tesla T4, CUDA available |
+| VRAM total / free at start | 15,637,086,208 B (14.56 GiB) / 15,527,116,800 B (14.46 GiB) |
+| Python / CUDA (torch build) | 3.12.3 / 13.0 |
+| torch / transformers / accelerate / huggingface-hub / pillow | 2.13.0 / 5.19.0 / 1.15.0 / 2.2.0 / 12.3.0 |
+
+Not measured: model load time, inference latency, peak memory. The failure came in
+`AutoProcessor.from_pretrained`, before any model weights were loaded.
+
+Cause: `ImportError: Qwen3VLVideoProcessor requires the Torchvision library`.
+`torchvision` was in `uv.lock` only as a dependency of `colpali-engine` (extra
+`late`). The local `.venv` has that extra, so Qwen3-VL loaded locally. The notebook
+installs only `--extra models`. Fix: `torchvision>=0.19` is now declared in the
+`models` extra. The relock (uv 0.11.16) changes no package or version, adds
+`torchvision 0.28.0` to `models`, and only rewrites environment markers.
+
+Local check of the fix, run without extra disk (3.9 GB free): a site-packages view
+containing exactly the `uv export --extra models` packages, run with `python -S`,
+loads `Qwen3VLProcessor` / `Qwen3VLVideoProcessor` at the pinned revision from the
+local cache. It reproduces the Colab error when torchvision is removed. Weights
+were not loaded and no GPU was used.
+
+Retry: build a new bundle from the commit that contains this fix
+(`python3 scripts/build_colab_bundle.py`), then rerun cells 3–5 with the new commit
+and checksum from `colab_outputs/source/manifest.json`. Cell 3 extracts into a
+directory named after the commit, so the retry does not collide with attempt 1.

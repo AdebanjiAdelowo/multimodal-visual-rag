@@ -28,6 +28,8 @@ dependencies = [
 # Neural models: text/visual encoders, reranker, vision-language generators.
 models = [
     "torch>=2.4",
+    # Qwen3-VL processors import torchvision; only colpali-engine pulled it in before.
+    "torchvision>=0.19",
     "transformers>=4.57",
     "sentence-transformers>=3.0",
     "accelerate>=1.0",

@@ -96,3 +96,8 @@ was revised with Hub-measured download sizes. Two gaps were found: generation co
 not pin model revisions, and the notebook omits `--extra quant` for 8B NF4. Recommended
 first experiment: Qwen3-VL-2B generation, prepared only after a passing smoke test.
 See the 2026-10-19 section of COLAB_HANDOFF.md.
+
+Colab attempt 1 (2026-10-20): FAILED at model loading on a Tesla T4 (14.56 GiB),
+because `torchvision` was missing from the `models` extra. It is now declared there;
+the processor load was verified locally with a models-only package set. Retry with a
+new bundle. Details are in COLAB_HANDOFF.md.
