@@ -1,0 +1,239 @@
+{
+  "metric": "token_f1",
+  "condition": "answerable",
+  "bootstrap_samples": 5000,
+  "bootstrap_seed": 0,
+  "paired_inputs_verified": true,
+  "comparisons": {
+    "qwen3vl_2b_closed_book": {
+      "baseline_mean": 0.2507399241051124,
+      "candidate_mean": 0.3422189597725263,
+      "diff": 0.09147903566741392,
+      "lo": 0.026911917955299947,
+      "hi": 0.14912872744303973,
+      "p": 0.0076,
+      "n": 60
+    },
+    "qwen3vl_2b_image_rag": {
+      "baseline_mean": 0.29929006540910996,
+      "candidate_mean": 0.3531509363588122,
+      "diff": 0.053860870949702266,
+      "lo": -0.022209644060736927,
+      "hi": 0.1257914015362425,
+      "p": 0.1644,
+      "n": 60
+    },
+    "qwen3vl_2b_image_text_rag": {
+      "baseline_mean": 0.2897951307312519,
+      "candidate_mean": 0.3904123502257185,
+      "diff": 0.10061721949446673,
+      "lo": 0.035436218041901994,
+      "hi": 0.16596681237106822,
+      "p": 0.0016,
+      "n": 60
+    },
+    "qwen3vl_2b_text_rag": {
+      "baseline_mean": 0.343347664320829,
+      "candidate_mean": 0.394838688740648,
+      "diff": 0.05149102441981895,
+      "lo": -0.02502114283088555,
+      "hi": 0.12847558461481304,
+      "p": 0.1836,
+      "n": 60
+    }
+  },
+  "import_validation": {
+    "validation_date": "2026-10-25",
+    "source_commit": "d40a96ffa7d4403e22422d997a6637cd04328348",
+    "archives": {
+      "qwen3vl_2b_generation-20261024T230326Z-1-001.zip": "8df0e99130411c35de249654f6b804fa53ae63b19dd00e568e07b4d5d1b82675",
+      "qwen3vl_2b_memory_check-20261024T230333Z-1-001.zip": "7634502701620a18ab4fb38e814b1ba579a8ad588d4e5fd0d2fc8dcab34155d0"
+    },
+    "checksums_verified": 15,
+    "paired_input_fields": [
+      "query_id",
+      "question",
+      "reference",
+      "condition",
+      "provided",
+      "gold"
+    ],
+    "systems": {
+      "qwen3vl_2b_closed_book": {
+        "n": 90,
+        "conditions": {
+          "answerable": 60,
+          "out_of_domain": 30
+        },
+        "run_sha256": "18b2e78f7daeefd6e02957b68ff759415ff774b38d772548aac037617bce4710",
+        "paired_inputs_match_baseline": true,
+        "empty_raw_answers": 0,
+        "token_limit_hits": 16,
+        "mean_generation_s": 3.9287889856888722,
+        "peak_allocated_bytes": 4682627072,
+        "peak_reserved_bytes": 4747952128
+      },
+      "qwen3vl_2b_image_rag": {
+        "n": 150,
+        "conditions": {
+          "answerable": 60,
+          "missing_evidence": 60,
+          "out_of_domain": 30
+        },
+        "run_sha256": "f0b311bb1b4d45534b990ccecd981c7b9ff603303015e44ea384c79726ed26a9",
+        "paired_inputs_match_baseline": true,
+        "empty_raw_answers": 0,
+        "token_limit_hits": 29,
+        "mean_generation_s": 5.446225663633319,
+        "peak_allocated_bytes": 5799041536,
+        "peak_reserved_bytes": 10026483712
+      },
+      "qwen3vl_2b_image_text_rag": {
+        "n": 150,
+        "conditions": {
+          "answerable": 60,
+          "missing_evidence": 60,
+          "out_of_domain": 30
+        },
+        "run_sha256": "10f667d59b09e94ed00aa99f71693515e01e45181b762e6ea36a215dd4445e65",
+        "paired_inputs_match_baseline": true,
+        "empty_raw_answers": 0,
+        "token_limit_hits": 29,
+        "mean_generation_s": 7.829029258586686,
+        "peak_allocated_bytes": 7833927680,
+        "peak_reserved_bytes": 15334375424
+      },
+      "qwen3vl_2b_text_rag": {
+        "n": 150,
+        "conditions": {
+          "answerable": 60,
+          "missing_evidence": 60,
+          "out_of_domain": 30
+        },
+        "run_sha256": "4c18c03eab407981a8eb0c037d37b258b12aeee04380c7061cb0b34801126f8e",
+        "paired_inputs_match_baseline": true,
+        "empty_raw_answers": 0,
+        "token_limit_hits": 41,
+        "mean_generation_s": 4.172473085420009,
+        "peak_allocated_bytes": 5088079872,
+        "peak_reserved_bytes": 6712983552
+      }
+    },
+    "warnings": [
+      "One CUDA allocation-failure warning in console.log; session completed with 540 records.",
+      "Memory-check peak reserved 9.44 GiB did not bound full-run peak reserved 14.28 GiB.",
+      "Token limit is 160; hitting the limit does not prove the answer is incomplete."
+    ]
+  },
+  "limitations": [
+    "Single dataset; 60 answerable questions; paired intervals are unadjusted for multiple comparisons.",
+    "Different model families and parameter counts: differences cannot be attributed to scale alone.",
+    "MPS versus CUDA kernels and model-specific image tokenization and chat templates differ.",
+    "Baseline model revision was not pinned at execution time.",
+    "160-token cap reached on 115 of 540 Qwen generations; raw outputs preserved.",
+    "One allocator warning; all calls returned and all 540 records validated."
+  ],
+  "scoring_environment": {
+    "device": "cpu",
+    "offline": true,
+    "python": "3.12.2",
+    "model": "cross-encoder/nli-deberta-v3-xsmall",
+    "cached_main_revision": "a150876415327c80daeff35ca6f68f5ed8cf5c24",
+    "packages": {
+      "torch": "2.13.0",
+      "transformers": "5.19.0",
+      "sentence-transformers": "5.7.0",
+      "numpy": "2.5.3"
+    },
+    "OMP_NUM_THREADS": 2
+  },
+  "scoring_status": "completed",
+  "grounding": {
+    "qwen3vl_2b_closed_book": {
+      "has_citation": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 58
+      }
+    },
+    "qwen3vl_2b_image_rag": {
+      "faithfulness": {
+        "mean": 0.36935674547048175,
+        "lo": 0.29476607395907023,
+        "hi": 0.4444131621065257,
+        "n": 57
+      },
+      "citation_precision": {
+        "mean": 0.8231292517006802,
+        "lo": 0.7176870748299319,
+        "hi": 0.9047619047619047,
+        "n": 49
+      },
+      "citation_recall": {
+        "mean": 0.6697530864197531,
+        "lo": 0.5617283950617283,
+        "hi": 0.7716820987654317,
+        "n": 54
+      },
+      "has_citation": {
+        "mean": 0.8596491228070176,
+        "lo": 0.7719298245614035,
+        "hi": 0.9473684210526315,
+        "n": 57
+      }
+    },
+    "qwen3vl_2b_image_text_rag": {
+      "faithfulness": {
+        "mean": 0.3715465453782676,
+        "lo": 0.29568943554377075,
+        "hi": 0.4453498405273633,
+        "n": 58
+      },
+      "citation_precision": {
+        "mean": 0.7403100775193799,
+        "lo": 0.6316860465116279,
+        "hi": 0.8449612403100774,
+        "n": 43
+      },
+      "citation_recall": {
+        "mean": 0.6025641025641025,
+        "lo": 0.49358974358974356,
+        "hi": 0.7243589743589743,
+        "n": 52
+      },
+      "has_citation": {
+        "mean": 0.7413793103448276,
+        "lo": 0.6206896551724138,
+        "hi": 0.8448275862068966,
+        "n": 58
+      }
+    },
+    "qwen3vl_2b_text_rag": {
+      "faithfulness": {
+        "mean": 0.3472147335478601,
+        "lo": 0.2789155198397399,
+        "hi": 0.41433358916425156,
+        "n": 57
+      },
+      "citation_precision": {
+        "mean": 0.7587719298245613,
+        "lo": 0.6403508771929824,
+        "hi": 0.8728070175438596,
+        "n": 38
+      },
+      "citation_recall": {
+        "mean": 0.4753086419753086,
+        "lo": 0.3611111111111111,
+        "hi": 0.5895061728395061,
+        "n": 54
+      },
+      "has_citation": {
+        "mean": 0.6666666666666666,
+        "lo": 0.543859649122807,
+        "hi": 0.7894736842105263,
+        "n": 57
+      }
+    }
+  }
+}

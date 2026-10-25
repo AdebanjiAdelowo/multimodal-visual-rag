@@ -1,8 +1,24 @@
-# Session handoff (checkpoint 2026-10-20)
+# Session handoff (updated 2026-10-25; original checkpoint 2026-10-20)
 
 Read this first, then `docs/COLAB_HANDOFF.md` (full detail on Colab work) and
 `docs/IMPLEMENTATION_STATUS.md` (status by area). Facts marked **verified** were run or
 checked in this session; everything else is labelled as an estimate or a plan.
+
+## Latest update: 2026-10-25
+
+The owner ran the memory check and full Qwen3-VL-2B experiment. Both downloaded
+archives are imported under `colab_outputs/`, with originals retained under
+`colab_outputs/downloads/`. All checksums, 540 unique records and paired evidence
+inputs verified locally. Memory-check peak reserved: 9.44 GiB; full-run peak
+reserved: 14.28 GiB, with one allocator warning but successful completion. Read the
+latest dated section of COLAB_HANDOFF.md before the historical checkpoint below.
+Do not rerun generation, rebuild the corpus or upload the bundles again.
+CPU scoring is now complete for all four systems; `results/SUMMARY.md` is regenerated.
+Read `results/analysis/qwen3vl_2b_vs_smolvlm_500m.json` for paired intervals, import
+checks and evaluator provenance. All 58 offline tests and Ruff pass. Next: interpret
+the results and select further research work; no new GPU run or push is authorized.
+The sections below are the original pre-execution checkpoint.
+
 
 ## A. Project overview
 

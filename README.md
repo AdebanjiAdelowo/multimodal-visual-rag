@@ -95,7 +95,7 @@ The full protocol and the known weaknesses of each automatic metric are in [docs
 
 ## Results
 
-All numbers below were measured on an Apple M3 Pro with 18 GB of memory. Brackets are 95% bootstrap intervals. The complete tables, including every paired comparison, are generated from the result files into [results/SUMMARY.md](results/SUMMARY.md). Experiments that need a CUDA GPU (ColQwen2, caption-based retrieval, larger generators) are listed with their commands in [docs/experiments.md](docs/experiments.md).
+Retrieval and SmolVLM numbers below were measured on an Apple M3 Pro with 18 GB of memory. Qwen3-VL-2B generation ran on a Colab Tesla T4; scoring ran locally on CPU. Brackets are 95% bootstrap intervals. The complete tables, including every paired comparison, are generated from the result files into [results/SUMMARY.md](results/SUMMARY.md). Experiments that need a CUDA GPU (ColQwen2, caption-based retrieval, larger generators) are listed with their commands in [docs/experiments.md](docs/experiments.md).
 
 ### Retrieval
 
@@ -143,6 +143,33 @@ Findings:
 - **Token log-probability is a weak grounding signal.** Its AUROC for separating answers produced with a relevant page in context from answers produced without one is 0.53 to 0.63.
 
 Token F1 against full-sentence reference answers understates correctness, and the faithfulness metric cannot credit support that exists only in pixels; both limitations are described in [docs/evaluation.md](docs/evaluation.md). Outputs are deterministic: a repeated run reproduced all 240 direct and text-RAG answers exactly.
+
+### Qwen3-VL-2B comparison (Colab T4)
+
+The pinned 2B model was evaluated with the same questions and frozen retrieved
+pages as SmolVLM: 540 generations, float16, greedy decoding, 160-token limit.
+All output checksums and paired inputs were verified locally before CPU scoring.
+
+| Evidence | SmolVLM token F1 | Qwen token F1 | Qwen minus SmolVLM [paired 95% interval] |
+|---|---:|---:|---|
+| None | 0.251 | 0.342 | +0.091 [+0.027, +0.149] |
+| OCR text | 0.343 | 0.395 | +0.051 [-0.025, +0.128] |
+| Images | 0.299 | 0.353 | +0.054 [-0.022, +0.126] |
+| Images + OCR text | 0.290 | 0.390 | +0.101 [+0.035, +0.166] |
+
+Intervals are unadjusted paired bootstrap intervals over 60 answerable questions.
+Both model family and parameter count change, so these are not pure scaling effects.
+Qwen cites pages on 38–49 of 60 answerable questions per RAG mode and abstains on
+25–28 of 30 out-of-domain questions. Citation recall is 0.475–0.670, but the
+NLI faithfulness proxy remains 0.347–0.372: more frequent citations do not imply
+that every answer is supported. See the full [results](results/SUMMARY.md) and
+[machine-readable paired comparison](results/analysis/qwen3vl_2b_vs_smolvlm_500m.json).
+
+The full run took 52 minutes. Peak allocated VRAM was 7.30 GiB; peak reserved
+VRAM reached 14.28 GiB, with one allocator warning followed by successful
+completion. 115/540 outputs reached the token limit. Hardware timings are not
+comparable to the MPS baseline. Recovery and provenance are documented in
+[COLAB_HANDOFF.md](docs/COLAB_HANDOFF.md).
 
 ## Installation
 

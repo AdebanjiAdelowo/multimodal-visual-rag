@@ -67,6 +67,10 @@ Answer quality on answerable questions (abstentions score 0):
 
 | System | Token F1 | ROUGE-L | NLI entailment | Yes/no acc. | F1 visual | F1 text-only | F1 gold in context |
 |---|---|---|---|---|---|---|---|
+| `qwen3vl_2b_closed_book` | 0.342 [0.298, 0.391] | 0.261 | 0.174 | 0.667 | 0.354 | 0.328 | n/a |
+| `qwen3vl_2b_image_rag` | 0.353 [0.297, 0.414] | 0.287 | 0.308 | 0.833 | 0.343 | 0.365 | 0.380 |
+| `qwen3vl_2b_image_text_rag` | 0.390 [0.333, 0.451] | 0.318 | 0.353 | 0.667 | 0.418 | 0.357 | 0.406 |
+| `qwen3vl_2b_text_rag` | 0.395 [0.337, 0.459] | 0.316 | 0.353 | 0.833 | 0.364 | 0.433 | 0.427 |
 | `smolvlm_500m_closed_book` | 0.251 [0.198, 0.305] | 0.203 | 0.099 | 0.000 | 0.257 | 0.243 | n/a |
 | `smolvlm_500m_image_rag` | 0.299 [0.239, 0.364] | 0.248 | 0.211 | 0.500 | 0.259 | 0.349 | 0.313 |
 | `smolvlm_500m_image_rag__oracle` | 0.306 [0.245, 0.369] | 0.260 | 0.215 | 0.667 | 0.314 | 0.295 | 0.306 |
@@ -77,6 +81,10 @@ Grounding and abstention:
 
 | System | Faithfulness | Unsupported rate | Citation P | Citation R | Cites a page | Abstain (answerable) | Abstain (evidence withheld) | Abstain (out of domain) | Confidence AUROC |
 |---|---|---|---|---|---|---|---|---|---|
+| `qwen3vl_2b_closed_book` | n/a | n/a | n/a | n/a | 0.000 | 0.033 | n/a | 0.400 | n/a |
+| `qwen3vl_2b_image_rag` | 0.369 | 0.702 | 0.823 | 0.670 | 0.860 | 0.050 | 0.233 | 0.933 | 0.673 |
+| `qwen3vl_2b_image_text_rag` | 0.372 | 0.690 | 0.740 | 0.603 | 0.741 | 0.033 | 0.133 | 0.833 | 0.638 |
+| `qwen3vl_2b_text_rag` | 0.347 | 0.702 | 0.759 | 0.475 | 0.667 | 0.050 | 0.117 | 0.867 | 0.630 |
 | `smolvlm_500m_closed_book` | n/a | n/a | n/a | n/a | 0.000 | 0.233 | n/a | 0.367 | n/a |
 | `smolvlm_500m_image_rag` | 0.365 | 0.683 | 0.444 | 0.093 | 0.100 | 0.000 | 0.000 | 0.033 | 0.627 |
 | `smolvlm_500m_image_rag__oracle` | 0.351 | 0.678 | 1.000 | 0.068 | 0.085 | 0.017 | n/a | n/a | n/a |
@@ -87,6 +95,10 @@ Cost:
 
 | System | Model | Params (M) | dtype | Generation s | Input tokens | Output tokens | Peak RSS MB | Accelerator MB |
 |---|---|---|---|---|---|---|---|---|
+| `qwen3vl_2b_closed_book` | Qwen/Qwen3-VL-2B-Instruct | 2127.5 | float16 | 3.93 | 75 | 82 | 8984 | 4466 |
+| `qwen3vl_2b_image_rag` | Qwen/Qwen3-VL-2B-Instruct | 2127.5 | float16 | 5.45 | 2526 | 68 | 8984 | 5530 |
+| `qwen3vl_2b_image_text_rag` | Qwen/Qwen3-VL-2B-Instruct | 2127.5 | float16 | 7.83 | 3937 | 63 | 8984 | 7471 |
+| `qwen3vl_2b_text_rag` | Qwen/Qwen3-VL-2B-Instruct | 2127.5 | float16 | 4.17 | 1510 | 76 | 8984 | 4852 |
 | `smolvlm_500m_closed_book` | HuggingFaceTB/SmolVLM-500M-Instruct | 507.5 | float16 | 0.72 | 85 | 73 | 2008 | 2121 |
 | `smolvlm_500m_image_rag` | HuggingFaceTB/SmolVLM-500M-Instruct | 507.5 | float16 | 1.80 | 1132 | 44 | 2008 | 2122 |
 | `smolvlm_500m_image_rag__oracle` | HuggingFaceTB/SmolVLM-500M-Instruct | 507.5 | float16 | 1.64 | 980 | 50 | 2008 | 2122 |
@@ -97,9 +109,13 @@ Paired bootstrap differences in token F1 on answerable questions (candidate minu
 
 | Question | Comparison | All | Visual | Text-only |
 |---|---|---|---|---|
+| direct model vs text RAG | `qwen3vl_2b_closed_book` -> `qwen3vl_2b_text_rag` | +0.053 [+0.008, +0.096], p=0.024 | +0.010 [-0.047, +0.064], p=0.708 | +0.105 [+0.041, +0.173], p=0.001 |
 | direct model vs text RAG | `smolvlm_500m_closed_book` -> `smolvlm_500m_text_rag` | +0.093 [+0.032, +0.159], p=0.003 | +0.074 [-0.006, +0.152], p=0.071 | +0.116 [+0.017, +0.222], p=0.019 |
+| direct model vs image RAG | `qwen3vl_2b_closed_book` -> `qwen3vl_2b_image_rag` | +0.011 [-0.052, +0.066], p=0.700 | -0.011 [-0.083, +0.064], p=0.769 | +0.038 [-0.059, +0.116], p=0.404 |
 | direct model vs image RAG | `smolvlm_500m_closed_book` -> `smolvlm_500m_image_rag` | +0.049 [-0.026, +0.124], p=0.201 | +0.002 [-0.099, +0.098], p=0.936 | +0.106 [+0.001, +0.214], p=0.046 |
+| text evidence vs image evidence | `qwen3vl_2b_text_rag` -> `qwen3vl_2b_image_rag` | -0.042 [-0.098, +0.008], p=0.103 | -0.021 [-0.075, +0.031], p=0.450 | -0.068 [-0.169, +0.018], p=0.145 |
 | text evidence vs image evidence | `smolvlm_500m_text_rag` -> `smolvlm_500m_image_rag` | -0.044 [-0.111, +0.020], p=0.182 | -0.072 [-0.158, +0.024], p=0.131 | -0.010 [-0.105, +0.075], p=0.873 |
+| adding page images to text evidence | `qwen3vl_2b_text_rag` -> `qwen3vl_2b_image_text_rag` | -0.004 [-0.062, +0.050], p=0.904 | +0.054 [+0.007, +0.107], p=0.021 | -0.076 [-0.185, +0.022], p=0.132 |
 | adding page images to text evidence | `smolvlm_500m_text_rag` -> `smolvlm_500m_image_text_rag` | -0.054 [-0.127, +0.014], p=0.130 | +0.002 [-0.083, +0.094], p=0.967 | -0.122 [-0.235, -0.018], p=0.018 |
 | retrieved pages vs gold pages (image) | `smolvlm_500m_image_rag` -> `smolvlm_500m_image_rag__oracle` | +0.006 [-0.035, +0.050], p=0.785 | +0.056 [+0.004, +0.114], p=0.038 | -0.054 [-0.122, +0.005], p=0.079 |
 

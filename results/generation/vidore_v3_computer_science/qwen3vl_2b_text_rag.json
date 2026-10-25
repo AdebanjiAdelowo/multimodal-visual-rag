@@ -1,0 +1,279 @@
+{
+  "system": "qwen3vl_2b_text_rag",
+  "config": {
+    "name": "qwen3vl_2b_text_rag",
+    "vlm": {
+      "backend": "transformers",
+      "model": "Qwen/Qwen3-VL-2B-Instruct",
+      "revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+      "dtype": "float16",
+      "load_in_4bit": false,
+      "max_new_tokens": 160,
+      "device": "cuda"
+    },
+    "evidence": {
+      "mode": "text",
+      "max_pages": 3,
+      "image_max_side": 1024,
+      "text_source": "ocr_tesseract",
+      "max_chars_per_page": 2500
+    }
+  },
+  "conditions": {
+    "answerable": {
+      "n": 60,
+      "abstain_rate": {
+        "mean": 0.05,
+        "lo": 0.0,
+        "hi": 0.11666666666666667,
+        "n": 60
+      },
+      "token_f1": {
+        "mean": 0.3948386887406479,
+        "lo": 0.3370394238567514,
+        "hi": 0.4587887573206899,
+        "n": 60
+      },
+      "token_recall": {
+        "mean": 0.4866291818567034,
+        "lo": 0.4150185710110278,
+        "hi": 0.5578036541710625,
+        "n": 60
+      },
+      "rouge_l": {
+        "mean": 0.3162642621791247,
+        "lo": 0.26263490488111507,
+        "hi": 0.3757833273608459,
+        "n": 60
+      },
+      "boolean_accuracy": {
+        "mean": 0.8333333333333334,
+        "lo": 0.5,
+        "hi": 1.0,
+        "n": 6
+      },
+      "answer_entailment": {
+        "mean": 0.35290956041717436,
+        "lo": 0.2478201170380877,
+        "hi": 0.46223310925767386,
+        "n": 60
+      },
+      "faithfulness": {
+        "mean": 0.3472147335478601,
+        "lo": 0.2789155198397399,
+        "hi": 0.41433358916425156,
+        "n": 57
+      },
+      "unsupported": {
+        "mean": 0.7017543859649122,
+        "lo": 0.5789473684210527,
+        "hi": 0.8070175438596491,
+        "n": 57
+      },
+      "citation_precision": {
+        "mean": 0.7587719298245613,
+        "lo": 0.6403508771929824,
+        "hi": 0.8728070175438596,
+        "n": 38
+      },
+      "citation_recall": {
+        "mean": 0.4753086419753086,
+        "lo": 0.3611111111111111,
+        "hi": 0.5895061728395061,
+        "n": 54
+      },
+      "has_citation": {
+        "mean": 0.6666666666666666,
+        "lo": 0.543859649122807,
+        "hi": 0.7894736842105263,
+        "n": 57
+      },
+      "invalid_citation": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 60
+      },
+      "gold_in_context": {
+        "mean": 0.9,
+        "lo": 0.8166666666666667,
+        "hi": 0.9666666666666667,
+        "n": 60
+      },
+      "subset:visual": {
+        "n": 33,
+        "token_f1": {
+          "mean": 0.36370389774911577,
+          "lo": 0.2947804445660905,
+          "hi": 0.4315976496299815,
+          "n": 33
+        },
+        "rouge_l": {
+          "mean": 0.28246018872082257,
+          "lo": 0.22189570336857645,
+          "hi": 0.3479313606282086,
+          "n": 33
+        },
+        "answer_entailment": {
+          "mean": 0.36604839132985834,
+          "lo": 0.24036229065527687,
+          "hi": 0.5034768691991992,
+          "n": 33
+        },
+        "abstained": {
+          "mean": 0.06060606060606061,
+          "lo": 0.0,
+          "hi": 0.15151515151515152,
+          "n": 33
+        }
+      },
+      "subset:text_only": {
+        "n": 27,
+        "token_f1": {
+          "mean": 0.43289232217474294,
+          "lo": 0.3289760964712938,
+          "hi": 0.542691478310107,
+          "n": 27
+        },
+        "rouge_l": {
+          "mean": 0.35758035196149396,
+          "lo": 0.2637194962776668,
+          "hi": 0.46149456504065367,
+          "n": 27
+        },
+        "answer_entailment": {
+          "mean": 0.33685098930167173,
+          "lo": 0.18065689098401452,
+          "hi": 0.5047241807478712,
+          "n": 27
+        },
+        "abstained": {
+          "mean": 0.037037037037037035,
+          "lo": 0.0,
+          "hi": 0.1111111111111111,
+          "n": 27
+        }
+      },
+      "subset:gold_in_context": {
+        "n": 54,
+        "token_f1": {
+          "mean": 0.42670264034505606,
+          "lo": 0.3657192562340568,
+          "hi": 0.48717162373624767,
+          "n": 54
+        },
+        "rouge_l": {
+          "mean": 0.3415169974435541,
+          "lo": 0.2853789634389482,
+          "hi": 0.40377885137826025,
+          "n": 54
+        },
+        "answer_entailment": {
+          "mean": 0.38983455508261816,
+          "lo": 0.2808281636845129,
+          "hi": 0.5015433216166489,
+          "n": 54
+        },
+        "abstained": {
+          "mean": 0.0,
+          "lo": 0.0,
+          "hi": 0.0,
+          "n": 54
+        }
+      }
+    },
+    "missing_evidence": {
+      "n": 60,
+      "abstain_rate": {
+        "mean": 0.11666666666666667,
+        "lo": 0.03333333333333333,
+        "hi": 0.2,
+        "n": 60
+      },
+      "unsupported_answer_rate": {
+        "mean": 0.8833333333333333,
+        "lo": 0.8,
+        "hi": 0.9666666666666667,
+        "n": 60
+      }
+    },
+    "out_of_domain": {
+      "n": 30,
+      "abstain_rate": {
+        "mean": 0.8666666666666667,
+        "lo": 0.7333333333333333,
+        "hi": 0.9666666666666667,
+        "n": 30
+      },
+      "unsupported_answer_rate": {
+        "mean": 0.13333333333333333,
+        "lo": 0.03333333333333333,
+        "hi": 0.26666666666666666,
+        "n": 30
+      }
+    }
+  },
+  "confidence": {
+    "signal": "mean_token_logprob",
+    "auroc_gold_in_context": 0.6299603174603174,
+    "n": 110
+  },
+  "systems": {
+    "model": {
+      "model": "Qwen/Qwen3-VL-2B-Instruct",
+      "device": "cuda",
+      "dtype": "float16",
+      "load_in_4bit": false,
+      "params_m": 2127.5,
+      "weights_mb": 4057.9
+    },
+    "generation_latency_s": {
+      "mean": 4.172473085420009,
+      "lo": 3.7373225649943365,
+      "hi": 4.674199183147999,
+      "n": 150
+    },
+    "input_tokens": {
+      "mean": 1509.6133333333332,
+      "lo": 1479.0525,
+      "hi": 1538.8743333333332,
+      "n": 150
+    },
+    "output_tokens": {
+      "mean": 75.82,
+      "lo": 66.591,
+      "hi": 86.56249999999999,
+      "n": 150
+    },
+    "peak_rss_mb": 8983.9,
+    "cuda_peak_allocated_mb": 4852.4,
+    "cuda_peak_reserved_mb": 6402.0
+  },
+  "retrieval": "hybrid_text",
+  "evidence_source": "frozen from smolvlm_500m run files",
+  "corpus": "vidore_v3_computer_science",
+  "seed": 13,
+  "hardware": {
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "python": "3.12.3",
+    "cpu_count": 2,
+    "ram_gb": 12.7,
+    "torch": "2.13.0+cu130",
+    "device": "cuda",
+    "gpu": "Tesla T4",
+    "gpu_mem_gb": 14.6,
+    "cuda_available": true,
+    "cuda_version": "13.0",
+    "gpu_name": "Tesla T4",
+    "vram_total_bytes": 15637086208,
+    "vram_free_bytes": 15527116800
+  },
+  "faithfulness_text_source": "parser_markdown",
+  "scoring_device": "cpu",
+  "provenance": {
+    "source_commit": "d40a96ffa7d4403e22422d997a6637cd04328348",
+    "experiment_sha256": "298db1a67494296ba39c33cb7e455fb7198bece7daac53295eedbe09b524595a",
+    "run_sha256": "4c18c03eab407981a8eb0c037d37b258b12aeee04380c7061cb0b34801126f8e"
+  }
+}

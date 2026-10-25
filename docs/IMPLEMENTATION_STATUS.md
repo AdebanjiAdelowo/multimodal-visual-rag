@@ -1,8 +1,8 @@
 # Implementation status and handoff
 
-Last updated: 2026-10-19. Branch `main`, tracking the private remote `origin` (github.com/AdebanjiAdelowo/multimodal-visual-rag); last pushed commit `63eaadd`.
+Last updated: 2026-10-25. Branch `main`, tracking the private remote `origin` (github.com/AdebanjiAdelowo/multimodal-visual-rag). Last verified remote commit: `fd4b32f` (2026-10-22). See the latest dated entries below and SESSION_HANDOFF.md; older entries describe historical states.
 
-This file is the entry point for resuming work. GPU experiments run on Kaggle; their state is in [KAGGLE_HANDOFF.md](KAGGLE_HANDOFF.md), which is the first thing to read when resuming. Per-experiment status and commands are in [experiments.md](experiments.md); measured numbers are in [../results/SUMMARY.md](../results/SUMMARY.md), which is generated from the JSON files in `results/` and never edited by hand.
+Start with [SESSION_HANDOFF.md](SESSION_HANDOFF.md) and [COLAB_HANDOFF.md](COLAB_HANDOFF.md) for current GPU work. [KAGGLE_HANDOFF.md](KAGGLE_HANDOFF.md) records the earlier Kaggle attempts. Per-experiment commands are in [experiments.md](experiments.md); measured numbers are in [../results/SUMMARY.md](../results/SUMMARY.md), generated from result JSON files.
 
 ## Status by area
 
@@ -10,7 +10,7 @@ Statuses: COMPLETE AND VERIFIED, IMPLEMENTED BUT NOT VERIFIED, PARTIALLY IMPLEME
 
 | Area | Status | Evidence | Next action |
 |---|---|---|---|
-| Repository setup | COMPLETE AND VERIFIED | `pyproject.toml`, `uv.lock`, `.venv` (Python 3.12), 42 tests pass, ruff clean | none |
+| Repository setup | COMPLETE AND VERIFIED | `pyproject.toml`, `uv.lock`, `.venv` (Python 3.12), 58 offline tests pass (2026-10-25), Ruff clean | none |
 | Dataset ingestion | COMPLETE AND VERIFIED | ViDoRe v3 computer science: 1,360 pages, 215 English queries, 1,049 qrels (`data/processed/`, gitignored); PDF and image ingestion tested | none |
 | OCR | COMPLETE AND VERIFIED | Tesseract text for all pages; OCR vs parser text compared | none |
 | Text retrieval | COMPLETE AND VERIFIED | BM25, dense, text hybrid in `results/retrieval/` | none |
@@ -18,8 +18,8 @@ Statuses: COMPLETE AND VERIFIED, IMPLEMENTED BUT NOT VERIFIED, PARTIALLY IMPLEME
 | Hybrid retrieval | COMPLETE AND VERIFIED | text, SigLIP and ColSmol hybrids evaluated with paired tests | none |
 | Reranking | COMPLETE AND VERIFIED | cross-encoder on three hybrids | none |
 | Caption-based retrieval | PENDING GPU | code, configs and unit tests exist; no captions generated | Kaggle stage `captions` |
-| Grounded generation | COMPLETE AND VERIFIED for SmolVLM-500M; larger models PENDING GPU | `results/generation/`; 240 answers reproduced exactly in a repeat run | Kaggle stages `generation`, `generation_8b` |
-| Citation verification | IMPLEMENTED; not informative for SmolVLM-500M | parser and metrics unit-tested; the model cites a page in at most 10% of answers | re-assess with Qwen3-VL results |
+| Grounded generation | SmolVLM-500M evaluated; Qwen3-VL-2B GPU run and CPU scoring COMPLETE; 4B/8B PENDING GPU | `results/generation/`; 240 answers reproduced exactly in a repeat run | Kaggle stages `generation`, `generation_8b` |
+| Citation verification | IMPLEMENTED; not informative for SmolVLM-500M | parser and metrics unit-tested; the model cites a page in at most 10% of answers | re-assess with imported Qwen3-VL-2B results |
 | Retrieval evaluation | COMPLETE AND VERIFIED | metrics, strata (modality, query origin), bootstrap, paired tests | none |
 | Generation evaluation | COMPLETE AND VERIFIED | three-condition harness run end to end; paired tests between evidence modes in the report | none |
 | Ablation experiments | PARTIALLY COMPLETE | retrieval ablations done; generation ablations (pages, resolution, text budget, model size) PENDING GPU | Kaggle stage `ablations` |
@@ -113,3 +113,11 @@ Qwen3-VL-2B experiment preparation (2026-10-20): IMPLEMENTED, NOT RUN. Resumable
 verified identical. The corpus archive (385 MiB, SHA-256 `aedb0646…`) is built locally but not
 uploaded. Next: the owner uploads the corpus and source to Drive, then approves the memory check.
 See COLAB_HANDOFF.md.
+
+Qwen3-VL-2B results imported and scored (2026-10-25): 540 records validated, all
+checksums and paired inputs verified. Answerable F1: closed book 0.342, text 0.395,
+image 0.353, image + text 0.390. Citation recall improves, but NLI faithfulness
+is not uniformly better than SmolVLM. Summary regenerated; paired comparison and
+import audit saved in results/analysis/. 58 offline tests and Ruff pass.
+The full-run reserved VRAM peak was 14.28 GiB, exceeding the memory-check peak;
+one allocator warning was logged, with all records completed.

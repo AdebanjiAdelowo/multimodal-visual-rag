@@ -1,0 +1,264 @@
+{
+  "system": "qwen3vl_2b_closed_book",
+  "config": {
+    "name": "qwen3vl_2b_closed_book",
+    "vlm": {
+      "backend": "transformers",
+      "model": "Qwen/Qwen3-VL-2B-Instruct",
+      "revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+      "dtype": "float16",
+      "load_in_4bit": false,
+      "max_new_tokens": 160,
+      "device": "cuda"
+    },
+    "evidence": {
+      "mode": "closed_book",
+      "max_pages": 3,
+      "image_max_side": 1024,
+      "text_source": "ocr_tesseract",
+      "max_chars_per_page": 2500
+    }
+  },
+  "conditions": {
+    "answerable": {
+      "n": 60,
+      "abstain_rate": {
+        "mean": 0.03333333333333333,
+        "lo": 0.0,
+        "hi": 0.08333333333333333,
+        "n": 60
+      },
+      "token_f1": {
+        "mean": 0.3422189597725263,
+        "lo": 0.29772907874751425,
+        "hi": 0.39066153717696683,
+        "n": 60
+      },
+      "token_recall": {
+        "mean": 0.49511503907597115,
+        "lo": 0.4320510946431927,
+        "hi": 0.5569940582450614,
+        "n": 60
+      },
+      "rouge_l": {
+        "mean": 0.2605324370658254,
+        "lo": 0.22195809824507168,
+        "hi": 0.3058184895728066,
+        "n": 60
+      },
+      "boolean_accuracy": {
+        "mean": 0.6666666666666666,
+        "lo": 0.3333333333333333,
+        "hi": 1.0,
+        "n": 6
+      },
+      "answer_entailment": {
+        "mean": 0.17431976570320937,
+        "lo": 0.09879481498738946,
+        "hi": 0.26103858033592886,
+        "n": 60
+      },
+      "faithfulness": {
+        "mean": NaN,
+        "lo": NaN,
+        "hi": NaN,
+        "n": 0
+      },
+      "unsupported": {
+        "mean": NaN,
+        "lo": NaN,
+        "hi": NaN,
+        "n": 0
+      },
+      "citation_precision": {
+        "mean": NaN,
+        "lo": NaN,
+        "hi": NaN,
+        "n": 0
+      },
+      "citation_recall": {
+        "mean": NaN,
+        "lo": NaN,
+        "hi": NaN,
+        "n": 0
+      },
+      "has_citation": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 58
+      },
+      "invalid_citation": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 60
+      },
+      "gold_in_context": {
+        "mean": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "n": 60
+      },
+      "subset:visual": {
+        "n": 33,
+        "token_f1": {
+          "mean": 0.3540948073180654,
+          "lo": 0.29731207336490617,
+          "hi": 0.40990972471781967,
+          "n": 33
+        },
+        "rouge_l": {
+          "mean": 0.26805406555865346,
+          "lo": 0.22003951850546088,
+          "hi": 0.3197170917256578,
+          "n": 33
+        },
+        "answer_entailment": {
+          "mean": 0.13349288741521764,
+          "lo": 0.05395653277748462,
+          "hi": 0.23875560467440102,
+          "n": 33
+        },
+        "abstained": {
+          "mean": 0.0,
+          "lo": 0.0,
+          "hi": 0.0,
+          "n": 33
+        }
+      },
+      "subset:text_only": {
+        "n": 27,
+        "token_f1": {
+          "mean": 0.3277040349946453,
+          "lo": 0.24982511418102546,
+          "hi": 0.40866138801713364,
+          "n": 27
+        },
+        "rouge_l": {
+          "mean": 0.2513393355745911,
+          "lo": 0.18207820852942436,
+          "hi": 0.3317452857195659,
+          "n": 27
+        },
+        "answer_entailment": {
+          "mean": 0.22421928361075483,
+          "lo": 0.10202435717391953,
+          "hi": 0.357814717718995,
+          "n": 27
+        },
+        "abstained": {
+          "mean": 0.07407407407407407,
+          "lo": 0.0,
+          "hi": 0.18518518518518517,
+          "n": 27
+        }
+      },
+      "subset:gold_in_context": {
+        "n": 0,
+        "token_f1": {
+          "mean": NaN,
+          "lo": NaN,
+          "hi": NaN,
+          "n": 0
+        },
+        "rouge_l": {
+          "mean": NaN,
+          "lo": NaN,
+          "hi": NaN,
+          "n": 0
+        },
+        "answer_entailment": {
+          "mean": NaN,
+          "lo": NaN,
+          "hi": NaN,
+          "n": 0
+        },
+        "abstained": {
+          "mean": NaN,
+          "lo": NaN,
+          "hi": NaN,
+          "n": 0
+        }
+      }
+    },
+    "out_of_domain": {
+      "n": 30,
+      "abstain_rate": {
+        "mean": 0.4,
+        "lo": 0.23333333333333334,
+        "hi": 0.5666666666666667,
+        "n": 30
+      },
+      "unsupported_answer_rate": {
+        "mean": 0.6,
+        "lo": 0.43333333333333335,
+        "hi": 0.7666666666666667,
+        "n": 30
+      }
+    }
+  },
+  "confidence": {
+    "signal": "mean_token_logprob",
+    "auroc_gold_in_context": NaN,
+    "n": 58
+  },
+  "systems": {
+    "model": {
+      "model": "Qwen/Qwen3-VL-2B-Instruct",
+      "device": "cuda",
+      "dtype": "float16",
+      "load_in_4bit": false,
+      "params_m": 2127.5,
+      "weights_mb": 4057.9
+    },
+    "generation_latency_s": {
+      "mean": 3.9287889856888722,
+      "lo": 3.377831990317764,
+      "hi": 4.4972464103138785,
+      "n": 90
+    },
+    "input_tokens": {
+      "mean": 75.36666666666666,
+      "lo": 73.8,
+      "hi": 76.95583333333333,
+      "n": 90
+    },
+    "output_tokens": {
+      "mean": 82.45555555555555,
+      "lo": 70.865,
+      "hi": 94.33361111111111,
+      "n": 90
+    },
+    "peak_rss_mb": 8983.9,
+    "cuda_peak_allocated_mb": 4465.7,
+    "cuda_peak_reserved_mb": 4528.0
+  },
+  "retrieval": "hybrid_text",
+  "evidence_source": "frozen from smolvlm_500m run files",
+  "corpus": "vidore_v3_computer_science",
+  "seed": 13,
+  "hardware": {
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "python": "3.12.3",
+    "cpu_count": 2,
+    "ram_gb": 12.7,
+    "torch": "2.13.0+cu130",
+    "device": "cuda",
+    "gpu": "Tesla T4",
+    "gpu_mem_gb": 14.6,
+    "cuda_available": true,
+    "cuda_version": "13.0",
+    "gpu_name": "Tesla T4",
+    "vram_total_bytes": 15637086208,
+    "vram_free_bytes": 15527116800
+  },
+  "faithfulness_text_source": "parser_markdown",
+  "scoring_device": "cpu",
+  "provenance": {
+    "source_commit": "d40a96ffa7d4403e22422d997a6637cd04328348",
+    "experiment_sha256": "298db1a67494296ba39c33cb7e455fb7198bece7daac53295eedbe09b524595a",
+    "run_sha256": "18b2e78f7daeefd6e02957b68ff759415ff774b38d772548aac037617bce4710"
+  }
+}

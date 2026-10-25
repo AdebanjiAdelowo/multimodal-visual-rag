@@ -336,3 +336,85 @@ Built from `d40a96f` (the commit that adds the runner; later commits change docs
 - `SOURCE_SHA256 = "11278e2a611742472dd1ae9f5642534f94ae8ecebd2b9f88622c90c19a30eb5c"`
 
 The output directory is bound to this commit. Resume only with the same bundle.
+
+
+## Benchmark run imported, 2026-10-25
+
+Source `d40a96ffa7d4403e22422d997a6637cd04328348`, pinned Qwen3-VL-2B revision
+`89644892e4d85e24eaac8bacfd4f463576704203`, float16, greedy, 160 tokens.
+The run started 2026-10-24 22:07:01 UTC and ended 22:59:10 UTC (52 min 9 s),
+i.e. 00:07–00:59 on 25 October in Europe/Rome. The memory-check directory timestamp
+is UTC too (`20261024T215948-639a9d0c`).
+
+Downloaded archives moved from Downloads to `colab_outputs/downloads/` and safely
+extracted into `colab_outputs/qwen3vl_2b_generation/` and
+`colab_outputs/qwen3vl_2b_memory_check/`. All 15 checksum entries and four completion
+checksums verified locally. The memory report checksum and passed status verified.
+All 540 records have unique keys, matching call logs, nonempty raw answers, and
+questions, references, conditions, gold pages and provided-page order identical to
+SmolVLM. Full archive hashes and import checks are recorded in
+`results/analysis/qwen3vl_2b_vs_smolvlm_500m.json`.
+
+| System | Records | Mean generation s | Peak allocated GiB | Peak reserved GiB | 160-token cap hits |
+|---|---:|---:|---:|---:|---:|
+| closed book | 90 | 3.93 | 4.36 | 4.42 | 16 |
+| text RAG | 150 | 4.17 | 4.74 | 6.25 | 41 |
+| image RAG | 150 | 5.45 | 5.40 | 9.34 | 29 |
+| image + text RAG | 150 | 7.83 | 7.30 | 14.28 | 29 |
+
+The seven-prompt memory check passed (peak allocated 7.15 GiB, reserved 9.44 GiB),
+but did not bound the full-run allocator reservation. The full log contains one
+allocation-failure warning requesting 1.03 GiB with only 0.15 GiB free. No Python
+exception was propagated: all 540 calls returned; all systems completed; session
+status is completed. The logs do not establish the allocator's exact recovery
+mechanism. Retain the warning and report 14.28 GiB as measured full-run reserved
+memory. Future larger runs need separate validation; a sampled check is no guarantee
+of worst-case memory. No evidence resolution or token budget was changed.
+
+115 outputs hit the 160-token cap (not necessarily all incomplete). Keep the cap
+unchanged for this comparison and retain raw outputs. Comparing models changes
+family as well as parameter count; it does not isolate model size alone. Hardware
+latency comparisons remain confounded by MPS versus CUDA.
+
+### Paired model comparison
+
+Token F1 on the same 60 answerable questions. Differences are Qwen minus SmolVLM;
+95% paired-bootstrap intervals (5,000 resamples, seed 0), unadjusted for multiple
+comparisons. Machine-readable results and import audit are in
+`results/analysis/qwen3vl_2b_vs_smolvlm_500m.json`.
+
+| Mode | SmolVLM F1 | Qwen F1 | Difference [95% interval] |
+|---|---:|---:|---|
+| closed_book | 0.251 | 0.342 | +0.091 [+0.027, +0.149] |
+| image_rag | 0.299 | 0.353 | +0.054 [-0.022, +0.126] |
+| image_text_rag | 0.290 | 0.390 | +0.101 [+0.035, +0.166] |
+| text_rag | 0.343 | 0.395 | +0.051 [-0.025, +0.128] |
+
+Closed-book and image + text intervals exclude zero; image-only and text-only
+intervals do not. Qwen text and image + text means are very close; this is no
+evidence that images add value over OCR for this model. Model family and scale
+change together, so this comparison cannot identify a pure scaling effect.
+
+From the parsed raw outputs, citations on answerable questions: text 38/60, image
+49/60, image + text 43/60. Out-of-domain abstentions: closed book 12/30, text 26/30,
+image 28/30, image + text 25/30. Missing-evidence abstentions: text 7/60, image
+14/60, image + text 8/60. Citation frequency is distinct from correctness/support.
+
+### Local scoring complete (2026-10-25)
+
+All 540 records scored successfully on CPU with network disabled, two OpenMP
+threads, and cached `cross-encoder/nli-deberta-v3-xsmall@a150876415327c80daeff35ca6f68f5ed8cf5c24`.
+The four result JSON files are in `results/generation/vidore_v3_computer_science/`;
+scored records remain gitignored under `artifacts/runs/generation/`.
+`results/SUMMARY.md` was regenerated with the existing report command.
+
+Citation recall (text / image / image + text) is 0.475 / 0.670 / 0.603; NLI
+faithfulness is 0.347 / 0.369 / 0.372, versus SmolVLM's 0.416 / 0.365 / 0.385.
+Better overlap scores and citation behavior do not establish uniformly better
+grounding; NLI also cannot credit support available only in pixels.
+The machine-readable comparison records the evaluator revision, environment,
+import audit and unadjusted paired intervals.
+
+Verification: 58 offline tests, Ruff lint and formatting passed. No new GPU run
+is needed for this experiment. Next work is research interpretation and selection
+of a pending workload; additional GPU runs and a GitHub push require authorization.
